@@ -1,0 +1,319 @@
+body, html {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+}
+
+:root {
+    --verde: hsl(111, 52%, 30%);
+    --verde-oscuro: hsl(111, 52%, 20%);
+    --verde-oscuro-tr: hsla(111, 53%, 20%, 0.534);
+    --verde-oscuro-tr-2: hsla(111, 53%, 20%, 0.75);
+}
+
+.heading {
+    text-align: center;
+    font-weight: 900;
+    font-size: 30px;
+    color: var(--verde);
+}
+
+header {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+    background-color: white;
+    color: var(--verde);
+    transition: 0.3s all ease-in-out;
+}
+
+nav {
+    padding: 20px;
+    text-align: center;
+    height: 85px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+nav figure.logo {
+    filter: invert(33%) sepia(17%) saturate(1926%) hue-rotate(65deg) brightness(104%) contrast(86%);
+    margin-top: -10px;
+}
+
+#modoOscuro:checked ~ header nav figure.logo {
+    filter: invert(97%) sepia(1%) saturate(3%) hue-rotate(231deg) brightness(117%) contrast(100%);
+}
+
+#modoOscuro:checked ~ header {
+    background-color: var(--verde);
+    
+}
+
+nav h1 {
+    font-size: 2.5rem;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--verde);
+    font-weight: bold;
+    transition: 0.2s all ease-in-out;
+}
+
+nav a:hover {
+    scale: 1.05;
+    opacity: 0.7;
+}
+
+#modoOscuro:checked ~ header nav a {
+    color: white;
+}
+
+nav .links {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+nav .acciones {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+nav .acciones .carrito {
+    position: relative;
+}
+
+nav .acciones .login {
+    background: linear-gradient(
+        45deg,
+        rgb(16, 87, 41) 0%,
+        rgb(18, 192, 96) 100%
+    );
+    color: white;
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+
+#modoOscuro:checked ~ header nav .acciones .login {
+    color: var(--verde);
+    background: white;
+}
+
+nav .acciones .carrito span {
+    background-color: red;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: block;
+    padding: 3px;
+    font-size: 12px;
+    line-height: 1;
+    position: absolute;
+    top: -10px;
+    left: 10px;
+    color: white;
+}
+
+
+/* Modo oscuro toggle */
+
+#modoOscuro {
+    display: none;
+}
+
+.modoOscuroInterruptor {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+    background-color: rgba(214, 203, 160, 0.85);
+    border-radius: 25px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    z-index: 1000;
+}
+
+.modoOscuroInterruptor::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 19px;
+    height: 19px;
+    background-color: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+
+#modoOscuro:checked + .modoOscuroInterruptor {
+    background-color: #000000; 
+}
+
+#modoOscuro:checked + .modoOscuroInterruptor::before {
+    transform: translateX(25px);
+}
+
+#modoOscuro:checked ~ .contenedor {
+    background-image: url('../img/bosqueNoche.jpeg');
+    color: #d1d1d1;
+}
+
+#modoOscuro:checked ~ .contenedor nav {
+    background-color: rgba(45, 74, 34, 0.9);
+    color: #eee;
+}
+
+#modoOscuro:checked ~ .contenedor .card{
+    background-color: rgba(183, 190, 162, 0.85);
+}
+
+#modoOscuro:checked ~ .contenedor .content h2{
+    color: white;
+    border-bottom: 2px solid rgba(172, 216, 166, 0.8);
+
+}
+
+#modoOscuro:checked ~ .contenedor .cardTitulo{
+    color: #000000;
+}
+
+#modoOscuro:checked ~ .contenedor .cardAutor,
+#modoOscuro:checked ~ .contenedor .cardAnio{
+    color: white;
+}
+
+#modoOscuro:checked ~ .contenedor .sidebar li a {
+    background-color: rgba(59, 108, 53, 0.8);
+    color: wheat;
+}
+
+#modoOscuro:checked ~ .contenedor .cards h2 {
+    color: #f4e7d1;
+}
+
+
+#modoOscuro:checked ~ .contenedor .sidebar li a:hover {
+    background-color: rgba(236, 227, 142, 0.8);
+    color: #2c2c2c;
+}
+
+
+#modoOscuro:checked ~ .contenedor .chat {
+    background-color: rgba(107, 126, 98, 0.85);
+}
+
+#modoOscuro:checked ~ .contenedor .headerChat {
+    background-color: #68975a;
+}
+
+#modoOscuro:checked ~ .contenedor .cardTitulo{
+    color: #534721;
+}
+
+
+#modoOscuro:checked ~ .contenedor .cardAutor,
+#modoOscuro:checked ~ .contenedor .cardAnio {
+    color: #282928;
+}
+
+
+#modoOscuro:checked ~ .contenedor .enviar {
+    background-color: #68975a ;
+}
+
+#modoOscuro:checked ~ .contenedor textarea {
+    background-color: #cccccc;
+}
+
+#modoOscuro:checked ~ .contenedor  .contenidoChat h4{
+    color: white;
+}
+
+
+
+footer{
+    padding: 40px 20px;
+    text-align: center;
+    background-color: rgba(76, 141, 141, 0.6);
+    color: #f4f4f4;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.infoFooter {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.logoFooter, .infoDerecha {
+    flex: 1;
+    margin: 20px;
+}
+
+.fotoFooter {
+    width: 150px;
+    margin-bottom: 20px;
+    background-color: #85c6ce;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+footer p {
+    font-size: 14px;
+    margin: 10px;
+    color: #d1d1d1;
+}
+
+footer h2 {
+    font-size: 24px;
+    color: #f4e7d1;
+    margin-bottom: 10px;
+}
+
+footer a {
+    color: #f4e7d1;
+    text-decoration: none;
+}
+
+footer .redesSociales {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+footer .icono {
+    margin: 0 10px;
+}
+
+footer .icono img {
+    width: 25px;
+    height: 25px;
+    border-radius: 10px;
+
+}
+
+footer .icono:hover img {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}

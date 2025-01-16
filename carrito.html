@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="./css/carrito.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <title>Carrito de Compra</title>
+</head>
+<body>
+    <input type="checkbox" id="modoOscuro" autofill="false">
+    <label for="modoOscuro" class="modoOscuroInterruptor">🌙</label>
+    <header>
+        <nav>
+            <a href="index.html">
+                <figure class="logo">
+                    <img src="img/logo.svg" height="60" alt="Logo">
+                </figure>
+            </a>
+            <div class="links">
+                <a href="index.html">Inicio</a>
+                <a href="libreria.html">Catálogo</a>
+                <a href="contacto.html">Contacto</a>
+            </div>
+            <div class="acciones">
+                <a href="login.html" class="login">Iniciar sesión</a>
+                <a href="carrito.html" class="carrito">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span>1</span>
+                </a>
+            </div>
+        </nav>
+    </header>
+    <main>
+        <section class="textoPago">
+            <h1>Pago</h1>
+        </section>
+
+        <section class="checkout">
+            <aside class="shoppingCart">
+                <h2>Carrito de compra</h2>
+                <table class="cartTable">
+                    <thead>
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th>Cantidad</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><img src="./img/harrypotter.jpg" alt="Harry Potter" class="productImage"> Harry Potter y la Piedra Filosofal</td>
+                            <td>$18.50</td>
+                            <td><input type="number" value="1" min="1" class="quantityInput"></td>
+                        </tr>
+                        <tr>
+                            <td><img src="./img/terror2.jpg" alt="Cuentos de Muerte y Demencia" class="productImage"> Cuentos de Muerte y Demencia</td>
+                            <td>$18.50</td>
+                            <td><input type="number" value="1" min="1" class="quantityInput"></td>
+                        </tr>
+                        <tr>
+                            <td><img src="./img/invisibleDrama.jpg" alt="Las Ventajas de ser Invisible" class="productImage"> Las Ventajas de ser Invisible</td>
+                            <td>$12.75</td>
+                            <td><input type="number" value="1" min="1" class="quantityInput"></td>
+                        </tr>
+                        <tr>
+                            <td><img src="./img/littlewomenClasico.jpg" alt="Little Women" class="productImage"> Little Women</td>
+                            <td>$12.55</td>
+                            <td><input type="number" value="1" min="1" class="quantityInput"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="subtotal">Subtotal: $62.30</div>
+            </aside>
+
+            <section class="paymentMethod">
+                <div class="information">
+                    <h2>Tu información</h2>
+                    <div>
+                        <label>E-mail</label><br>
+                        <input type="text" placeholder="jeff@gmail.com">
+                    </div>
+                </div>
+                <div class="paymentOptions">
+                    <h3>Métodos de pago</h3>
+                    <div class="payment-method">
+                        <label>
+                            <input type="radio" name="payment" value="PayPal">
+                            <img src="./img/paypal.webp" alt="PayPal" width="50px">
+                        </label>
+                        <label>
+                            <input type="radio" name="payment" value="Visa">
+                            <img src="./img/visa.webp" alt="Visa" width="50px">
+                        </label>
+                        <label>
+                            <input type="radio" name="payment" value="MasterCard">
+                            <img src="./img/mastercard.jpg" alt="MasterCard" width="50px">
+                        </label>
+                        <label>
+                            <input type="radio" name="payment" value="Amex">
+                            <img src="./img/amex.png" alt="American Express" width="50px">
+                        </label>
+                    </div>
+                    <button>Comprar ahora</button>
+                </div>
+            </section>
+        </section>
+
+        <footer>
+            <section class="infoFooter">
+                <section class="logoFooter">
+                    <img src="img/logo.png" alt="logo" class="fotoFooter">
+                    <h2>Simply Lovely</h2>
+                    <p> <i class="fa-solid fa-map-pin"></i> Moreno Bellido #200 y Av. Amazonas </p>
+                    <p> <i class="fa-solid fa-phone"></i> +593 998765412</p>
+                    <p><i class="fa-solid fa-envelope"></i><a href="mailto:elbosquedeloslibros@libreria.com">simplyLovely@tienda.com</a></p>
+                </section>
+                <section class="infoDerecha">
+                    <section class="redesSociales">
+                        <a href="https://www.facebook.com/?locale=es_LA" class="icono"><img src="img/facebook.png" alt="Facebook" ></a>
+                        <a href="https://www.instagram.com/" class="icono"><img src="img/Instagram.webp" alt="Ig" ></a>
+                        <a href="https://twitter.com/?lang=es" class="icono"><img src="img/x.jpg" alt="X" ></a>
+                    </section>  
+                    &copy; Tienda Digital Simply Lovely
+                    <p><i class="fa-solid fa-people-group"></i>Hecho por el Grupo 3</p>              
+                </section>
+            </section>
+        </footer>
+    </main>
+</body>
+</html>

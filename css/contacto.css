@@ -1,0 +1,141 @@
+body {
+    background-image: url(../img/bosque.jpg);
+    min-height: 100vh;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+}
+
+section.hero {
+    height: 50vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+main {
+    background-image: url("../img/bosque.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+#modoOscuro:checked ~ main {
+    background-image: url("../img/bosqueNoche.jpeg");
+}
+
+section.hero h1 {
+    font-size: 5rem;
+    color: white;
+    text-shadow: 0 0 10px hsla(0, 0%, 0%, 0.7);
+}
+
+section.content {
+    padding: 40px;
+    display: flex;
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+div.formulario {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+    margin: 0 auto;
+}
+
+div.mapa {
+    flex-shrink: 1;
+    flex-grow: 1;
+    flex-basis: 500px;
+}
+
+iframe {
+    width: 100%;
+    min-width: 500px;
+    min-height: 400px;
+    border-radius: 10px;
+}
+
+div.form {
+    flex-grow: 1;
+}
+
+form {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+form .w1-2 {
+    width: calc(50% - 20px / 2);
+}
+
+form input {
+    background: white;
+    border: none;
+    padding: 15px 15px;
+    border-radius: 20px;
+    margin-top: 15px;
+    box-shadow: #2c452e 0px 10px 10px -5px;
+    border-inline: 2px solid transparent;
+}
+
+#modoOscuro:checked ~ main form input {
+    background: hsl(0, 0%, 15%);
+}
+
+form input::-moz-placeholder {
+    color: rgb(170, 170, 170);
+}
+
+form input::placeholder {
+    color: rgb(170, 170, 170);
+}
+
+form input:focus {
+    outline: none;
+    border-inline: 2px solid var(--verde);
+}
+
+form .login-button {
+    display: block;
+    width: 100%;
+    font-weight: bold;
+    background: linear-gradient(
+        45deg,
+        rgb(16, 87, 41) 0%,
+        rgb(18, 192, 96) 100%
+    );
+    color: white;
+    padding-block: 15px;
+    margin: 20px auto;
+    border-radius: 20px;
+    box-shadow: rgba(29, 80, 24, 0.878) 0px 20px 10px -15px;
+    border: none;
+    transition: all 0.2s ease-in-out;
+}
+
+#modoOscuro:checked ~ main form .login-button {
+    background: linear-gradient(
+        45deg,
+        rgb(16, 87, 41) 0%,
+        rgb(18, 192, 96) 100%
+    );
+}
+
+
+form .login-button:hover {
+    transform: scale(1.03);
+    box-shadow: rgba(29, 80, 24, 0.878) 0px 23px 10px -20px;
+}
+
+form .login-button:active {
+    transform: scale(0.95);
+    box-shadow: rgba(29, 80, 24, 0.878) 0px 15px 10px -10px;
+}

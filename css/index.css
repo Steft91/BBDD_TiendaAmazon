@@ -1,0 +1,107 @@
+main {
+    background-image: url("../img/bosque.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+#modoOscuro:checked ~ main {
+    background-image: url("../img/bosqueNoche.jpeg");
+}
+
+main section.hero {
+    height: calc(100vh - 85px);
+    background-image: url("../img/index_0.jpg");
+    background-size: 150%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    animation: hero-bg;
+    animation-duration: 5s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+
+@keyframes hero-bg {
+    0% {
+        background-size: 100%;
+    }
+    100% {
+        background-size: 150%;
+    }
+}
+
+main section.hero .container {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+main section.hero .center {
+    background-color: var(--verde-oscuro-tr-2);
+    padding: 50px;
+    color: white;
+    text-shadow: 0 0 10px black;
+    font-size: 1.2rem;
+}
+
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.typewriter h1 {
+    overflow: hidden; /* Ensures the content is not revealed until the animation */
+    border-right: .15em solid orange; /* The typwriter cursor */
+    white-space: nowrap; /* Keeps the content on a single line */
+    margin: 0 auto; /* Gives that scrolling effect as the typing happens */
+    letter-spacing: .15em; /* Adjust as needed */
+    animation: 
+        typing 3.5s steps(40, end),
+        blink-caret .75s step-end infinite;
+    }
+
+/* The typing effect */
+@keyframes typing {
+    from { width: 0 }
+    to { width: 100% }
+}
+
+/* The typewriter cursor effect */
+@keyframes blink-caret {
+    from, to { border-color: transparent }
+    50% { border-color: orange; }
+}
+
+main section.hero figure.logo {
+    filter: invert(97%) sepia(1%) saturate(3%) hue-rotate(231deg) brightness(117%) contrast(100%);
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding-bottom: 50px;
+}
+
+section.grid {
+    display: flex;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+section.grid img {
+    width: 50%;
+    animation: img_appear;
+    animation-duration: 3s;
+}
+
+@keyframes img_appear {
+    0% {
+        scale: 0.8;
+    }
+    100% {
+        scale: 1;
+    }
+}
+
