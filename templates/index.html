@@ -4,7 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-        <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
         <link rel="stylesheet" href="css/index.css">
         <title>Página Principal</title>
     </head>
@@ -19,9 +19,12 @@
                 </figure>
             </a>
             <div class="links">
-                <a href="index.html">Inicio</a>
-                <a href="libreria.html">Catálogo</a>
-                <a href="contacto.html">Contacto</a>
+                <a href="{{ url_for('home') }}">Inicio</a>
+                <a href="{{ url_for('contacto') }}">Contacto</a>
+                <a href="{{ url_for('login') }}">Iniciar sesión</a>
+                <a href="{{ url_for('carrito') }}">Carrito</a>
+
+
             </div>
             <div class="acciones">
                 <a href="login.html" class="login">Iniciar sesión</a>
