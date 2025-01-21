@@ -1,5 +1,5 @@
 main {
-    background-image: url("../img/bosque.jpg");
+    background-image: url("/static/img/fondo.png");
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -11,7 +11,7 @@ main {
 
 main section.hero {
     height: calc(100vh - 85px);
-    background-image: url("../img/index_0.jpg");
+    background-image: url("../img/index_0.png");
     background-size: 150%;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -77,7 +77,6 @@ main section.hero .center {
 }
 
 main section.hero figure.logo {
-    filter: invert(97%) sepia(1%) saturate(3%) hue-rotate(231deg) brightness(117%) contrast(100%);
     width: 100%;
     display: flex;
     justify-content: center;
@@ -94,6 +93,7 @@ section.grid img {
     width: 50%;
     animation: img_appear;
     animation-duration: 3s;
+
 }
 
 @keyframes img_appear {

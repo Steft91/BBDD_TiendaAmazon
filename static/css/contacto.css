@@ -1,5 +1,5 @@
 body {
-    background-image: url(../img/bosque.jpg);
+    background-image: url(/static/img/fondo.png);
     min-height: 100vh;
     background-position: center;
     background-repeat: no-repeat;
@@ -15,7 +15,7 @@ section.hero {
 }
 
 main {
-    background-image: url("../img/bosque.jpg");
+    background-image: url("/static/img/fondo.png");
     background-size: cover;
     background-repeat: no-repeat;
     background-attachment: fixed;

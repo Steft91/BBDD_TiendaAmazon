@@ -6,7 +6,7 @@
 }
 
 main {
-    background-image: url(../img/bosque.jpg);
+    background-image: url(/static/img/fondo.png);
     background-size: cover;
     background-attachment: fixed;
 }

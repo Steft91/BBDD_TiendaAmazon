@@ -13,10 +13,10 @@ body {
 }
 
 :root {
-    --verde: hsl(111, 52%, 30%);
-    --verde-oscuro: hsl(111, 52%, 20%);
-    --verde-oscuro-tr: hsla(111, 53%, 20%, 0.534);
-    --verde-oscuro-tr-2: hsla(111, 53%, 20%, 0.75);
+    --verde: rgba(76, 141, 141);
+    --verde-oscuro: hsl(229, 47%, 31%);
+    --verde-oscuro-tr: hsla(224, 38%, 47%, 0.534);
+    --verde-oscuro-tr-2: hsla(236, 59%, 86%, 0.75);
 }
 
 .heading {
@@ -48,8 +48,8 @@ nav {
 }
 
 nav figure.logo {
-    filter: invert(33%) sepia(17%) saturate(1926%) hue-rotate(65deg) brightness(104%) contrast(86%);
     margin-top: -10px;
+    border-radius: 10px;
 }
 
 #modoOscuro:checked ~ header nav figure.logo {
@@ -104,8 +104,8 @@ nav .acciones .carrito {
 nav .acciones .login {
     background: linear-gradient(
         45deg,
-        rgb(16, 87, 41) 0%,
-        rgb(18, 192, 96) 100%
+        rgb(31, 77, 99) 0%,
+        rgb(131, 173, 192) 100%
     );
     color: white;
     border-radius: 5px;
@@ -274,9 +274,18 @@ footer{
 .fotoFooter {
     width: 150px;
     margin-bottom: 20px;
-    background-color: #85c6ce;
     padding: 10px;
     border-radius: 10px;
+    background-color: #f4e7d1;
+
+}
+
+.fotoFooter img {
+    width: 100%;
+    height: auto;
+    border-radius: 50px;
+    background-color: #f4e7d1;
+
 }
 
 footer p {
@@ -309,7 +318,7 @@ footer .icono {
 footer .icono img {
     width: 25px;
     height: 25px;
-    border-radius: 10px;
+    border-radius: 50px;
 
 }
 
