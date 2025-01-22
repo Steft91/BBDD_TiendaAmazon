@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchClients();    // Cargar clientes al inicio
     fetchProviders();  // Cargar proveedores al inicio
     fetchCategories(); // Cargar categorías al inicio
+    fetchProductos(); 
 });
 
 // Función para obtener clientes desde la API
