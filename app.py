@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 # Credenciales de la base de datos PostgreSQL
 DB_HOST = "localhost"
-DB_NAME = "PostAmazon"
+DB_NAME = ""
 DB_USER = "postgres"
 DB_PASSWORD = ""
 
@@ -89,7 +89,7 @@ def get_cliente_by_id(id_cliente):
 def add_cliente():
     cliente = request.json
     # Validar datos requeridos
-    if not all(key in cliente for key in ['id_cliente', 'nombre', 'correo', 'telefono', 'contrasena']):
+    if not all(key in cliente for key in ['nombre', 'correo', 'telefono', 'contrasena']):
         return jsonify({"error": "Datos incompletos"}), 400
     
     conn = None
@@ -99,10 +99,10 @@ def add_cliente():
         cursor = conn.cursor()
         cursor.execute(
             """
-            INSERT INTO Cliente (id_cliente, nombre, correo, telefono, contrasena) 
-            VALUES (%s, %s, %s, %s, %s)
+            INSERT INTO Cliente (nombre, correo, telefono, contrasena) 
+            VALUES (%s, %s, %s, %s)
             """,
-            (cliente['id_cliente'], cliente['nombre'], cliente['correo'], cliente['telefono'], cliente['contrasena'])
+            (cliente['nombre'], cliente['correo'], cliente['telefono'], cliente['contrasena'])
         )
         conn.commit()
         return jsonify({"message": "Cliente agregado correctamente"}), 201
@@ -220,8 +220,8 @@ def add_proveedor():
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            "INSERT INTO PROVEEDOR (ID_PROVEEDOR, NOMBRE, DESCRIPCION_PROVEEDOR, TELEFONO_PROVEEDOR, CORREO_PROVEEDOR) VALUES (%s, %s, %s, %s, %s)",
-            (proveedor['id_proveedor'], proveedor['nombre'], proveedor['descripcion_proveedor'], proveedor['telefono_proveedor'], proveedor['correo_proveedor'])
+            "INSERT INTO PROVEEDOR (NOMBRE, DESCRIPCION_PROVEEDOR, TELEFONO_PROVEEDOR, CORREO_PROVEEDOR) VALUES (%s, %s, %s, %s)",
+            (proveedor['nombre'], proveedor['descripcion_proveedor'], proveedor['telefono_proveedor'], proveedor['correo_proveedor'])
         )
         conn.commit()
         return jsonify({"message": "Proveedor registrado exitosamente"}), 201
@@ -230,6 +230,7 @@ def add_proveedor():
     finally:
         cursor.close()
         conn.close()
+
 
 @app.route('/proveedores/<int:id_proveedor>', methods=['PUT'])
 def update_proveedor(id_proveedor):
@@ -332,8 +333,8 @@ def add_categoria():
         
         # Modificar la consulta para retornar el ID generado automáticamente
         cursor.execute(
-            "INSERT INTO CATEGORIA (ID_CATEGORIA, NOMBRE_CATEGORIA, DESCRIPCION_CATEGORIA) VALUES (%s, %s, %s)",
-            (categoria['id_categoria'], categoria['nombre_categoria'], categoria['descripcion_categoria'])
+            "INSERT INTO CATEGORIA (NOMBRE_CATEGORIA, DESCRIPCION_CATEGORIA) VALUES (%s, %s)",
+            (categoria['nombre_categoria'], categoria['descripcion_categoria'])
         )
         
         conn.commit()
@@ -398,6 +399,368 @@ def delete_categoria(id_categoria):
         return jsonify({"message": "Categoría eliminada exitosamente"}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+##PRODUCTOS
+def validate_producto_data(producto):
+    """Validar los campos requeridos para un producto."""
+    required_fields = ['nombre', 'descripcion', 'precio', 'stock', 'proveedor_id', 'categoria_id']
+    for field in required_fields:
+        if field not in producto or producto[field] is None:
+            raise ValueError(f"El campo '{field}' es obligatorio.")
+        
+        
+@app.route('/productos', methods=['POST'])
+def add_producto():
+    """Agregar un producto a la base de datos."""
+    producto = request.json
+    try:
+        validate_producto_data(producto)  # Validar datos de entrada
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(
+            """
+            INSERT INTO PRODUCTO (NOMBRE, DESCRIPCION, PRECIO, STOCK, ID_PROVEEDOR, ID_CATEGORIA)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+            (producto['nombre'], producto['descripcion'], producto['precio'],
+             producto['stock'], producto['proveedor_id'], producto['categoria_id'])
+        )
+        conn.commit()
+        return jsonify({"message": "Producto agregado exitosamente"}), 201
+    except ValueError as ve:
+        return jsonify({"error": str(ve)}), 400
+    except Exception as e:
+        return jsonify({"error": "Error interno del servidor"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/productos/<int:id_producto>', methods=['PUT'])
+def update_producto(id_producto):
+    """Actualizar un producto existente (parcial o completo)."""
+    datos = request.json
+    if not datos:
+        return jsonify({"error": "No se enviaron datos para actualizar"}), 400
+
+    campos = []
+    valores = []
+
+    # Construir dinámicamente la consulta SQL a partir de los campos enviados
+    for campo in ['nombre', 'descripcion', 'precio', 'stock', 'proveedor_id', 'categoria_id']:
+        if campo in datos:
+            campos.append(f"{campo.upper()} = %s")
+            valores.append(datos[campo])
+    
+    if not campos:
+        return jsonify({"error": "No se enviaron campos válidos para actualizar"}), 400
+
+    # Agregar el id_producto como último parámetro para el WHERE
+    valores.append(id_producto)
+    consulta_sql = f"UPDATE PRODUCTO SET {', '.join(campos)} WHERE ID_PRODUCTO = %s"
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute(consulta_sql, valores)
+        conn.commit()
+
+        if cursor.rowcount == 0:
+            return jsonify({"message": "Producto no encontrado"}), 404
+        return jsonify({"message": "Producto actualizado exitosamente"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/productos/<int:id_producto>', methods=['DELETE'])
+def delete_producto(id_producto):
+    """Eliminar un producto."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM PRODUCTO WHERE ID_PRODUCTO = %s", (id_producto,))
+        conn.commit()
+        if cursor.rowcount:
+            return jsonify({"message": "Producto eliminado exitosamente"}), 200
+        else:
+            return jsonify({"message": "Producto no encontrado"}), 404
+    except Exception as e:
+        return jsonify({"error": "Error interno del servidor"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/productos', methods=['GET'])
+def get_productos():
+    """Listar todos los productos."""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT * FROM PRODUCTO")
+        productos = cursor.fetchall()
+
+        if not productos:
+            return jsonify({"message": "No se encontraron productos"}), 404
+        return jsonify(productos), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al consultar productos: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Obtener los productos segun su categoria
+@app.route('/productos/categoria/<int:id_categoria>', methods=['GET'])
+def get_productos_por_categoria(id_categoria):
+    """Listar productos por categoría."""
+    if id_categoria <= 0:
+        return jsonify({"error": "ID de categoría inválido"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+        cursor.execute("SELECT * FROM PRODUCTO WHERE ID_CATEGORIA = %s", (id_categoria,))
+        productos = cursor.fetchall()
+
+        if not productos:
+            return jsonify({"message": "No se encontraron productos para esta categoría"}), 404
+        return jsonify(productos), 200
+    except Exception as e:
+        return jsonify({"error": f"Error al consultar productos: {str(e)}"}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/compras', methods=['POST'])
+def registrar_compra():
+    """
+    Registrar una nueva compra con opción de combinar GiftCard y Tarjeta.
+    """
+    datos = request.json
+    cliente_id = datos.get('cliente_id')
+    productos = datos.get('productos')  # Lista de {Id_Producto, cantidad}
+    metodo_pago = datos.get('metodo_pago')  # GiftCard, Tarjeta o Combinado
+    detalles_pago = datos.get('detalles_pago')  # GiftCard y/o Tarjeta
+
+    # Validación inicial
+    if not cliente_id or not productos or not metodo_pago:
+        return jsonify({"error": "Campos obligatorios: cliente_id, productos, metodo_pago"}), 400
+    if metodo_pago not in ["GiftCard", "Tarjeta", "Combinado"]:
+        return jsonify({"error": "Método de pago inválido"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verificar cliente
+        cursor.execute("SELECT * FROM Cliente WHERE Id_Cliente = %s", (cliente_id,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Cliente no encontrado"}), 404
+
+        # Calcular precio total de los productos
+        total = 0
+        for producto in productos:
+            producto_id = producto.get('Id_Producto')
+            cantidad = producto.get('cantidad')
+            if not producto_id or not cantidad:
+                return jsonify({"error": "Cada producto debe tener Id_Producto y cantidad"}), 400
+
+            cursor.execute("SELECT Precio, Descuento, Stock FROM Producto WHERE Id_Producto = %s", (producto_id,))
+            producto_data = cursor.fetchone()
+            if not producto_data:
+                return jsonify({"error": f"Producto con ID {producto_id} no encontrado"}), 404
+            precio, descuento, stock = producto_data
+
+            if stock < cantidad:
+                return jsonify({"error": f"Stock insuficiente para el producto {producto_id}"}), 400
+
+            precio_final = precio * (1 - descuento / 100)
+            total += precio_final * cantidad
+
+        # Manejar métodos de pago
+        saldo_giftcard = 0
+        if metodo_pago in ["GiftCard", "Combinado"]:
+            gift_card_id = detalles_pago.get('gift_card_id')
+            cursor.execute("SELECT Saldo FROM GiftCard WHERE Id_Gift = %s", (gift_card_id,))
+            gift_card_data = cursor.fetchone()
+            if not gift_card_data:
+                return jsonify({"error": "GiftCard no encontrada"}), 404
+            saldo_giftcard = gift_card_data[0]
+
+        restante = total
+        if metodo_pago == "GiftCard":
+            if saldo_giftcard < total:
+                return jsonify({"error": "Saldo insuficiente en la GiftCard"}), 400
+            restante = 0
+            cursor.execute("UPDATE GiftCard SET Saldo = Saldo - %s WHERE Id_Gift = %s", (total, gift_card_id))
+
+        elif metodo_pago == "Combinado":
+            if saldo_giftcard >= total:
+                restante = 0
+                cursor.execute("UPDATE GiftCard SET Saldo = Saldo - %s WHERE Id_Gift = %s", (total, gift_card_id))
+            else:
+                restante = total - saldo_giftcard
+                cursor.execute("UPDATE GiftCard SET Saldo = 0 WHERE Id_Gift = %s", (gift_card_id,))
+
+        if metodo_pago in ["Tarjeta", "Combinado"] and restante > 0:
+            tarjeta_data = detalles_pago.get('tarjeta')
+            if not tarjeta_data:
+                return jsonify({"error": "Se requieren detalles de la tarjeta"}), 400
+            cursor.execute(
+                """
+                SELECT * FROM Tarjeta WHERE Num_Tarjeta = %s AND Nombre = %s 
+                AND Fecha_Vencimiento = %s AND CVV = %s
+                """,
+                (
+                    tarjeta_data.get('num_tarjeta'),
+                    tarjeta_data.get('nombre'),
+                    tarjeta_data.get('fecha_vencimiento'),
+                    tarjeta_data.get('cvv'),
+                ),
+            )
+            if not cursor.fetchone():
+                return jsonify({"error": "Detalles de tarjeta inválidos"}), 400
+
+        # Registrar la compra
+        impuesto = total * 0.12
+        precio_total = total + impuesto
+        cursor.execute(
+            """
+            INSERT INTO Compra (Id_Cliente, Importe, Impuesto, Precio_Total, Metodo_Pago, Fecha) 
+            VALUES (%s, %s, %s, %s, %s, NOW()) RETURNING Id_Compra
+            """,
+            (cliente_id, total, impuesto, precio_total, metodo_pago),
+        )
+        compra_id = cursor.fetchone()[0]
+
+        # Registrar productos y reducir stock
+        for producto in productos:
+            producto_id = producto.get('Id_Producto')
+            cantidad = producto.get('cantidad')
+            cursor.execute("UPDATE Producto SET Stock = Stock - %s WHERE Id_Producto = %s", (cantidad, producto_id))
+            cursor.execute(
+                "INSERT INTO Compra_Producto (Id_Compra, Id_Producto, Cantidad) VALUES (%s, %s, %s)",
+                (compra_id, producto_id, cantidad),
+            )
+
+        conn.commit()
+        return jsonify({"message": "Compra registrada exitosamente", "compra_id": compra_id}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+        
+        
+@app.route('/compras/<cliente_id>', methods=['GET'])
+def historial_compras(cliente_id):
+    """
+    Consultar el historial de compras de un cliente.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute(
+            """
+            SELECT c.Id_Compra, c.Fecha, c.Precio_Total, cp.Id_Producto, cp.Cantidad, 
+                   p.Nombre AS Producto, p.Precio, p.Descuento
+            FROM Compra c
+            JOIN Compra_Producto cp ON c.Id_Compra = cp.Id_Compra
+            JOIN Producto p ON cp.Id_Producto = p.Id_Producto
+            WHERE c.Id_Cliente = %s
+            ORDER BY c.Fecha DESC
+            """,
+            (cliente_id,)
+        )
+        compras = cursor.fetchall()
+
+        if not compras:
+            return jsonify({"message": "No se encontraron compras para este cliente"}), 404
+
+        return jsonify(compras), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+@app.route('/compra/<compra_id>', methods=['GET'])
+def detalle_compra(compra_id):
+    """
+    Obtener detalles de una compra específica.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute(
+            """
+            SELECT c.Id_Compra, c.Fecha, c.Metodo_Pago, cp.Id_Producto, cp.Cantidad, 
+                   p.Nombre AS Producto, p.Precio
+            FROM Compra c
+            JOIN Compra_Producto cp ON c.Id_Compra = cp.Id_Compra
+            JOIN Producto p ON cp.Id_Producto = p.Id_Producto
+            WHERE c.Id_Compra = %s
+            """,
+            (compra_id,)
+        )
+        compra = cursor.fetchall()
+
+        if not compra:
+            return jsonify({"message": "Compra no encontrada"}), 404
+
+        return jsonify(compra), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/compra/<compra_id>', methods=['DELETE'])
+def eliminar_compra(compra_id):
+    """
+    Eliminar una compra específica.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verificar si la compra existe
+        cursor.execute("SELECT * FROM Compra WHERE Id_Compra = %s", (compra_id,))
+        if not cursor.fetchone():
+            return jsonify({"message": "Compra no encontrada"}), 404
+
+        # Eliminar productos asociados a la compra
+        cursor.execute("DELETE FROM Compra_Producto WHERE Id_Compra = %s", (compra_id,))
+
+        # Eliminar la compra
+        cursor.execute("DELETE FROM Compra WHERE Id_Compra = %s", (compra_id,))
+
+        conn.commit()
+        return jsonify({"message": "Compra eliminada exitosamente"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
     finally:
         cursor.close()
         conn.close()
