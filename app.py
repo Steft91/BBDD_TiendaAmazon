@@ -765,6 +765,74 @@ def eliminar_compra(compra_id):
         cursor.close()
         conn.close()
 
+# # Ruta para obtener los productos del carrito
+# @app.route('/carrito', methods=['GET'])
+# def get_carrito():
+#     try:
+#         conn = get_db_connection()
+#         cursor = conn.cursor(cursor_factory=RealDictCursor)
+#         cursor.execute("SELECT * FROM COMPRA")
+#         carrito = cursor.fetchall()
+#         return jsonify(carrito)
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+#     finally:
+#         cursor.close()
+#         conn.close()
+
+# # Ruta para agregar un producto al carrito
+# @app.route('/carrito', methods=['POST'])
+# def add_carrito():
+#     data = request.json
+#     try:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute("""
+#             INSERT INTO COMPRA (id_direccion, id_cliente, impuestos, importe, precio_total)
+#             VALUES (%s, %s, %s, %s, %s) RETURNING id_compra
+#         """, (data['id_direccion'], data['id_cliente'], data['impuestos'], data['importe'], data['precio_total']))
+#         conn.commit()
+#         return jsonify({"message": "Producto agregado al carrito"}), 201
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+#     finally:
+#         cursor.close()
+#         conn.close()
+
+# # Ruta para actualizar un producto en el carrito
+# @app.route('/carrito/<int:id_producto>', methods=['PUT'])
+# def update_carrito(id_producto):
+#     data = request.json
+#     try:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute("""
+#             UPDATE COMPRA SET cantidad = %s WHERE id_producto = %s
+#         """, (data['cantidad'], id_producto))
+#         conn.commit()
+#         return jsonify({"message": "Cantidad actualizada"}), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+#     finally:
+#         cursor.close()
+#         conn.close()
+
+# # Ruta para eliminar un producto del carrito
+# @app.route('/carrito/<int:id_producto>', methods=['DELETE'])
+# def delete_carrito(id_producto):
+#     try:
+#         conn = get_db_connection()
+#         cursor = conn.cursor()
+#         cursor.execute("DELETE FROM COMPRA WHERE id_producto = %s", (id_producto,))
+#         conn.commit()
+#         return jsonify({"message": "Producto eliminado del carrito"}), 200
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
+#     finally:
+#         cursor.close()
+#         conn.close()
+   
+
 
 
 if __name__ == '__main__':
