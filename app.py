@@ -39,6 +39,9 @@ def login():
 def carrito():
     return render_template('carrito.html')
 
+@app.route('/libreria')
+def libreria():
+    return render_template('libreria.html')
 
 # Definición de rutas
 
