@@ -831,8 +831,616 @@ def eliminar_compra(compra_id):
 #     finally:
 #         cursor.close()
 #         conn.close()
-   
+  
+@app.route('/rastreo/<compra_id>', methods=['GET'])
+def rastrear_compra(compra_id):
+    """
+    Consultar el estado de rastreo de una compra.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
+        cursor.execute(
+            """
+            SELECT r.Id_Rastreo, r.Estado, r.Ultima_Actualizacion, r.Detalles
+            FROM Rastreo r
+            JOIN Compra c ON r.Id_Compra = c.Id_Compra
+            WHERE c.Id_Compra = %s
+            """,
+            (compra_id,)
+        )
+        rastreo = cursor.fetchone()
+
+        if not rastreo:
+            return jsonify({"message": "No se encontró rastreo para esta compra"}), 404
+
+        return jsonify(rastreo), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+           
+
+@app.route('/direcciones', methods=['POST'])
+def agregar_direccion():
+    """
+    Agregar una nueva dirección.
+    """
+    datos = request.json
+    id_ciudad = datos.get('id_ciudad')
+    direccion_principal = datos.get('direccion_principal')
+    direccion_secundaria = datos.get('direccion_secundaria')
+    codigo_postal = datos.get('codigo_postal')
+
+    if not id_ciudad or not direccion_principal or not direccion_secundaria or not codigo_postal:
+        return jsonify({"error": "Los campos id_ciudad, direccion_principal, direccion_secundaria y codigo_postal son obligatorios"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verificar si la ciudad existe
+        cursor.execute("SELECT * FROM Ciudad WHERE id_ciudad = %s", (id_ciudad,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Ciudad no encontrada"}), 404
+
+        # Insertar nueva dirección
+        cursor.execute(
+            """
+            INSERT INTO Direccion (id_ciudad, direccion_principal, direccion_secundaria, codigo_postal) 
+            VALUES (%s, %s, %s, %s) RETURNING id_direccion
+            """,
+            (id_ciudad, direccion_principal, direccion_secundaria, codigo_postal)
+        )
+        id_direccion = cursor.fetchone()[0]
+        conn.commit()
+
+        return jsonify({"message": "Dirección registrada exitosamente", "id_direccion": id_direccion}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+        
+
+@app.route('/direcciones', methods=['GET'])
+def listar_direcciones():
+    """
+    Listar todas las direcciones.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute(
+            """
+            SELECT d.id_direccion, d.direccion_principal, d.direccion_secundaria, d.codigo_postal,
+                   c.nombre_ciudad AS ciudad
+            FROM Direccion d
+            JOIN Ciudad c ON d.id_ciudad = c.id_ciudad
+            """
+        )
+        direcciones = cursor.fetchall()
+
+        if not direcciones:
+            return jsonify({"message": "No se encontraron direcciones"}), 404
+
+        return jsonify(direcciones), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+        
+@app.route('/direcciones/<int:id_direccion>', methods=['GET'])
+def get_direccion_by_id(id_direccion):
+    """
+    Obtener una dirección por su ID.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("""
+            SELECT d.id_direccion, d.direccion_principal, d.direccion_secundaria, d.codigo_postal, c.nombre_ciudad AS ciudad, p.nombre_provincia AS provincia, pa.nombre_pais AS pais
+            FROM Direccion d
+            JOIN Ciudad c ON d.id_ciudad = c.id_ciudad
+            JOIN Provincia p ON c.id_provincia = p.id_provincia
+            JOIN Pais pa ON p.id_pais = pa.id_pais
+            WHERE d.id_direccion = %s
+        """, (id_direccion,))
+        
+        direccion = cursor.fetchone()
+
+        if direccion:
+            return jsonify(direccion), 200
+        else:
+            return jsonify({"message": "Dirección no encontrada"}), 404
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/direcciones/<id_direccion>', methods=['PUT'])
+def actualizar_direccion(id_direccion):
+    """
+    Actualizar uno o más campos de una dirección existente.
+    """
+    datos = request.json
+    direccion_principal = datos.get('direccion_principal')
+    direccion_secundaria = datos.get('direccion_secundaria')
+    codigo_postal = datos.get('codigo_postal')
+    id_ciudad = datos.get('id_ciudad')
+
+    # Verificar que al menos un campo haya sido proporcionado
+    if not any([direccion_principal, direccion_secundaria, codigo_postal, id_ciudad]):
+        return jsonify({"error": "Debe proporcionar al menos un campo para actualizar"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verificar si la dirección existe
+        cursor.execute("SELECT * FROM Direccion WHERE id_direccion = %s", (id_direccion,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Dirección no encontrada"}), 404
+
+        # Construir dinámicamente la consulta de actualización
+        campos_actualizar = []
+        valores = []
+
+        if direccion_principal:
+            campos_actualizar.append("direccion_principal = %s")
+            valores.append(direccion_principal)
+        if direccion_secundaria:
+            campos_actualizar.append("direccion_secundaria = %s")
+            valores.append(direccion_secundaria)
+        if codigo_postal:
+            campos_actualizar.append("codigo_postal = %s")
+            valores.append(codigo_postal)
+        if id_ciudad:
+            # Verificar si la ciudad existe antes de actualizar
+            cursor.execute("SELECT * FROM Ciudad WHERE id_ciudad = %s", (id_ciudad,))
+            if not cursor.fetchone():
+                return jsonify({"error": "Ciudad no encontrada"}), 404
+            campos_actualizar.append("id_ciudad = %s")
+            valores.append(id_ciudad)
+
+        # Añadir el ID de la dirección al final de los valores
+        valores.append(id_direccion)
+
+        # Ejecutar la consulta de actualización
+        consulta = f"""
+            UPDATE Direccion 
+            SET {', '.join(campos_actualizar)}
+            WHERE id_direccion = %s
+        """
+        cursor.execute(consulta, tuple(valores))
+        conn.commit()
+
+        return jsonify({"message": "Dirección actualizada exitosamente"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/direcciones/<id_direccion>', methods=['DELETE'])
+def eliminar_direccion(id_direccion):
+    """
+    Eliminar una dirección por su ID.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verificar si la dirección existe
+        cursor.execute("SELECT * FROM Direccion WHERE id_direccion = %s", (id_direccion,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Dirección no encontrada"}), 404
+
+        # Eliminar dirección
+        cursor.execute("DELETE FROM Direccion WHERE id_direccion = %s", (id_direccion,))
+        conn.commit()
+
+        return jsonify({"message": "Dirección eliminada exitosamente"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# Gestión de País
+@app.route('/paises', methods=['POST'])
+def agregar_pais():
+    """
+    Agregar un nuevo país.
+    """
+    datos = request.json
+    nombre_pais = datos.get('nombre_pais')
+
+    if not nombre_pais:
+        return jsonify({"error": "El campo 'nombre_pais' es obligatorio"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("INSERT INTO PAIS (NOMBRE_PAIS) VALUES (%s) RETURNING ID_PAIS", (nombre_pais,))
+        pais_id = cursor.fetchone()[0]
+        conn.commit()
+
+        return jsonify({"message": "País registrado exitosamente", "id_pais": pais_id}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/paises', methods=['GET'])
+def listar_paises():
+    """
+    Listar todos los países.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("SELECT * FROM PAIS")
+        paises = cursor.fetchall()
+
+        return jsonify(paises), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/paises/<id_pais>', methods=['PUT'])
+def actualizar_pais(id_pais):
+    """
+    Actualizar un país.
+    """
+    datos = request.json
+    nuevo_nombre = datos.get('nombre_pais')
+
+    if not nuevo_nombre:
+        return jsonify({"error": "El campo 'nombre_pais' es obligatorio"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("UPDATE PAIS SET NOMBRE_PAIS = %s WHERE ID_PAIS = %s", (nuevo_nombre, id_pais))
+        conn.commit()
+
+        return jsonify({"message": "País actualizado exitosamente"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/paises/<id_pais>', methods=['DELETE'])
+def eliminar_pais(id_pais):
+    """
+    Eliminar un país.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verificar si el país está asociado a alguna provincia
+        cursor.execute("SELECT * FROM PROVINCIA WHERE ID_PAIS = %s", (id_pais,))
+        if cursor.fetchone():
+            return jsonify({"error": "No se puede eliminar el país porque está asociado a una provincia"}), 400
+
+        cursor.execute("DELETE FROM PAIS WHERE ID_PAIS = %s", (id_pais,))
+        conn.commit()
+
+        return jsonify({"message": "País eliminado exitosamente"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# Gestión de Provincia
+@app.route('/provincias', methods=['POST'])
+def agregar_provincia():
+    """
+    Agregar una nueva provincia asociada a un país.
+    """
+    datos = request.json
+    nombre_provincia = datos.get('nombre_provincia')
+    id_pais = datos.get('id_pais')
+
+    if not nombre_provincia or not id_pais:
+        return jsonify({"error": "Los campos 'nombre_provincia' y 'id_pais' son obligatorios"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verificar si el país existe
+        cursor.execute("SELECT * FROM Pais WHERE id_pais = %s", (id_pais,))
+        if not cursor.fetchone():
+            return jsonify({"error": "País no encontrado"}), 404
+
+        # Insertar la provincia
+        cursor.execute(
+            "INSERT INTO Provincia (nombre_provincia, id_pais) VALUES (%s, %s) RETURNING id_provincia", 
+            (nombre_provincia, id_pais)
+        )
+        id_provincia = cursor.fetchone()[0]
+        conn.commit()
+
+        return jsonify({"message": "Provincia registrada exitosamente", "id_provincia": id_provincia}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/provincias/<id_provincia>', methods=['PUT'])
+def actualizar_provincia(id_provincia):
+    """
+    Actualizar una provincia.
+    """
+    datos = request.json
+    nuevo_nombre_provincia = datos.get('nombre_provincia')
+
+    if not nuevo_nombre_provincia:
+        return jsonify({"error": "El campo 'nombre_provincia' es obligatorio"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Actualizar el nombre de la provincia
+        cursor.execute(
+            "UPDATE Provincia SET nombre_provincia = %s WHERE id_provincia = %s", 
+            (nuevo_nombre_provincia, id_provincia)
+        )
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Provincia no encontrada"}), 404
+
+        conn.commit()
+        return jsonify({"message": "Provincia actualizada exitosamente"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+# Gestión de Ciudad
+@app.route('/ciudades', methods=['POST'])
+def agregar_ciudad():
+    """
+    Agregar una nueva ciudad asociada a una provincia.
+    """
+    datos = request.json
+    nombre_ciudad = datos.get('nombre_ciudad')
+    id_provincia = datos.get('id_provincia')
+
+    if not nombre_ciudad or not id_provincia:
+        return jsonify({"error": "Los campos 'nombre_ciudad' y 'id_provincia' son obligatorios"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verificar si la provincia existe
+        cursor.execute("SELECT * FROM Provincia WHERE id_provincia = %s", (id_provincia,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Provincia no encontrada"}), 404
+
+        # Insertar la ciudad
+        cursor.execute(
+            "INSERT INTO Ciudad (nombre_ciudad, id_provincia) VALUES (%s, %s) RETURNING id_ciudad",
+            (nombre_ciudad, id_provincia)
+        )
+        id_ciudad = cursor.fetchone()[0]
+        conn.commit()
+
+        return jsonify({"message": "Ciudad registrada exitosamente", "id_ciudad": id_ciudad}), 201
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/ciudades', methods=['GET'])
+def listar_ciudades():
+    """
+    Listar todas las ciudades.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("""
+            SELECT c.id_ciudad, c.nombre_ciudad AS ciudad, p.nombre_provincia AS provincia, pa.nombre_pais AS pais
+            FROM Ciudad c
+            JOIN Provincia p ON c.id_provincia = p.id_provincia
+            JOIN Pais pa ON p.id_pais = pa.id_pais
+        """)
+        ciudades = cursor.fetchall()
+
+        return jsonify(ciudades), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@app.route('/ciudades/<id_ciudad>', methods=['PUT'])
+def modificar_ciudad(id_ciudad):
+    """
+    Modificar los datos de una ciudad por su ID.
+    """
+    datos = request.json
+    nuevo_nombre_ciudad = datos.get('nombre_ciudad')
+    nueva_id_provincia = datos.get('id_provincia')
+
+    if not nuevo_nombre_ciudad and not nueva_id_provincia:
+        return jsonify({"error": "Debe proporcionar al menos 'nombre_ciudad' o 'id_provincia' para actualizar"}), 400
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verificar si la ciudad existe
+        cursor.execute("SELECT * FROM Ciudad WHERE id_ciudad = %s", (id_ciudad,))
+        if not cursor.fetchone():
+            return jsonify({"error": "Ciudad no encontrada"}), 404
+
+        # Si se va a actualizar la provincia, verificar que exista
+        if nueva_id_provincia:
+            cursor.execute("SELECT * FROM Provincia WHERE id_provincia = %s", (nueva_id_provincia,))
+            if not cursor.fetchone():
+                return jsonify({"error": "Provincia no encontrada"}), 404
+
+        # Construir la consulta dinámica para actualizar
+        campos_a_actualizar = []
+        valores = []
+
+        if nuevo_nombre_ciudad:
+            campos_a_actualizar.append("nombre_ciudad = %s")
+            valores.append(nuevo_nombre_ciudad)
+
+        if nueva_id_provincia:
+            campos_a_actualizar.append("id_provincia = %s")
+            valores.append(nueva_id_provincia)
+
+        valores.append(id_ciudad)  # ID de la ciudad para la cláusula WHERE
+        consulta_actualizacion = f"UPDATE Ciudad SET {', '.join(campos_a_actualizar)} WHERE id_ciudad = %s"
+
+        # Ejecutar la actualización
+        cursor.execute(consulta_actualizacion, tuple(valores))
+        conn.commit()
+
+        return jsonify({"message": "Ciudad actualizada exitosamente"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/ciudades/<int:id_ciudad>', methods=['GET'])
+def get_ciudad_by_id(id_ciudad):
+    """
+    Obtener una ciudad por su ID.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+        cursor.execute("""
+            SELECT c.id_ciudad, c.nombre_ciudad AS ciudad, p.nombre_provincia AS provincia, pa.nombre_pais AS pais
+            FROM Ciudad c
+            JOIN Provincia p ON c.id_provincia = p.id_provincia
+            JOIN Pais pa ON p.id_pais = pa.id_pais
+            WHERE c.id_ciudad = %s
+        """, (id_ciudad,))
+        
+        ciudad = cursor.fetchone()
+
+        if ciudad:
+            return jsonify(ciudad), 200
+        else:
+            return jsonify({"message": "Ciudad no encontrada"}), 404
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+@app.route('/ciudades/<id_ciudad>', methods=['DELETE'])
+def eliminar_ciudad(id_ciudad):
+    """
+    Eliminar una ciudad por su ID.
+    """
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Verificar si la ciudad está asociada a alguna dirección
+        cursor.execute("SELECT * FROM Direccion WHERE id_ciudad = %s", (id_ciudad,))
+        if cursor.fetchone():
+            return jsonify({"error": "No se puede eliminar la ciudad porque está asociada a una dirección"}), 400
+
+        # Eliminar la ciudad
+        cursor.execute("DELETE FROM Ciudad WHERE id_ciudad = %s", (id_ciudad,))
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Ciudad no encontrada"}), 404
+
+        conn.commit()
+        return jsonify({"message": "Ciudad eliminada exitosamente"}), 200
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
 
 
 if __name__ == '__main__':
