@@ -19,13 +19,13 @@
                 </figure>
             </a>
             <section class="links">
-                <a href="index.html">Inicio</a>
-                <a href="libreria.html">Catálogo</a>
-                <a href="contacto.html">Contacto</a>
+                <a href="{{ url_for('home') }}">Inicio</a>
+                <a href="{{ url_for('libreria') }}">Catálogo</a>
+                <a href="{{ url_for('contacto') }}">Contacto</a>
             </section>
             <section class="acciones">
-                <a href="login.html" class="login">Iniciar sesión</a>
-                <a href="carrito.html" class="carrito">
+                <a href="{{ url_for('login') }}" class="login">Iniciar sesión</a>
+                <a href="{{ url_for('carrito') }}" class="carrito">
                     <i class="fa-solid fa-cart-shopping"></i>
                     <span>1</span>
                 </a>
@@ -74,6 +74,6 @@
         </footer>
     </section>
 
-    <script src="../static/js/libreria.js"></script>
+    <script src="{{ url_for('static', filename='js/libreria.js') }}"></script>
 </body>
 </html>

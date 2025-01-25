@@ -19,15 +19,13 @@
                 </figure>
             </a>
             <div class="links">
-                <a href="/templates/index.html">Inicio</a>
-                <a href="libreria.html">Catálogo</a>
-                <a href="/templates/contacto.html">Contacto</a>
-
-
+                <a href="{{ url_for('home') }}">Inicio</a>
+                <a href="{{ url_for('libreria') }}">Catálogo</a>
+                <a href="{{ url_for('contacto') }}">Contacto</a>
             </div>
             <div class="acciones">
-                <a href="login.html" class="login">Iniciar sesión</a>
-                <a href="carrito.html" class="carrito">
+                <a href="{{ url_for('login') }}" class="login">Iniciar sesión</a>
+                <a href="{{ url_for('carrito') }}" class="carrito">
                     <i class="fa-solid fa-cart-shopping"></i>
                     <span>1</span>
                 </a>

@@ -1,115 +1,141 @@
 document.addEventListener('DOMContentLoaded', () => {
-    fetchClients();    // Cargar clientes al inicio
-    fetchProviders();  // Cargar proveedores al inicio
     fetchCategories(); // Cargar categorías al inicio
-    fetchProductos(); 
+    fetchProductos();  // Cargar productos al inicio
 });
-
-
-// Función para obtener proveedores desde la API
-async function fetchProviders() {
-    try {
-        const response = await fetch('/providers'); // Endpoint para proveedores
-        const providers = await response.json();
-        console.log('Proveedores:', providers);
-    } catch (error) {
-        console.error('Error al obtener los proveedores:', error);
-    }
-}
 
 // Función para obtener categorías desde la API
 async function fetchCategories() {
     try {
         const response = await fetch('/categories'); // Endpoint para categorías
+        if (!response.ok) {
+            throw new Error(`Error al obtener las categorías: ${response.statusText}`);
+        }
+
         const categories = await response.json();
-        console.log('Categorías:', categories);
+        renderCategories(categories); // Generar la barra lateral de categorías
     } catch (error) {
         console.error('Error al obtener las categorías:', error);
     }
 }
 
+// Función para generar dinámicamente la barra lateral de categorías
+function renderCategories(categories) {
+    const sidebar = document.querySelector('.sidebar ul');
+    sidebar.innerHTML = '<h2>Categorías</h2>'; // Limpiar contenido existente y agregar título
+
+    categories.forEach((categoria) => {
+        const li = document.createElement('li');
+        const link = document.createElement('a');
+        link.href = `#categoria-${categoria.ID_CATEGORIA}`;
+        link.textContent = categoria.NOMBRE;
+        li.appendChild(link);
+        sidebar.appendChild(li);
+    });
+}
+
 // Función para obtener los productos desde la API y generar las cartas
 async function fetchProductos() {
     try {
-        const response = await fetch('/productos'); // Llamada al backend
+        const response = await fetch('/productos'); // Endpoint para productos
         if (!response.ok) {
             throw new Error(`Error al obtener los productos: ${response.statusText}`);
         }
 
-        const productos = await response.json(); // Convertir la respuesta a JSON
+        const productos = await response.json();
         renderProductos(productos); // Generar las cartas de los productos
     } catch (error) {
         console.error('Error al cargar los productos:', error);
     }
 }
 
-// Función para generar dinámicamente las cartas de los productos
+// Función para generar dinámicamente las cartas de productos
 function renderProductos(productos) {
     const container = document.getElementById('productosContainer'); // Contenedor de las cartas
     container.innerHTML = ''; // Limpiar el contenedor antes de agregar nuevas cartas
 
-    productos.forEach((producto) => {
-        // Crear la estructura de la carta
-        const card = document.createElement('div');
-        card.classList.add('card');
-        card.id = producto.NOMBRE; // Usar el nombre como ID (siempre único)
+    // Agrupar productos por categoría
+    const productosPorCategoria = productos.reduce((acc, producto) => {
+        const categoriaId = producto.ID_CATEGORIA;
+        if (!acc[categoriaId]) {
+            acc[categoriaId] = [];
+        }
+        acc[categoriaId].push(producto);
+        return acc;
+    }, {});
 
-        // Estructura del header de la carta
-        const cardHeader = document.createElement('div');
-        cardHeader.classList.add('cardHeader');
+    // Crear secciones por categoría
+    Object.keys(productosPorCategoria).forEach((categoriaId) => {
+        const categoriaProductos = productosPorCategoria[categoriaId];
+        const categoriaTitulo = categoriaProductos[0]?.NOMBRE_CATEGORIA || `Categoría ${categoriaId}`;
 
-        const img = document.createElement('img');
-        img.src = producto.IMAGEN; // Usar el atributo IMAGEN de la base de datos
-        img.alt = producto.NOMBRE;
-        img.classList.add('cardImagen');
-        cardHeader.appendChild(img);
+        // Crear encabezado de categoría
+        const section = document.createElement('section');
+        section.id = `categoria-${categoriaId}`;
+        section.classList.add('categoria');
+        
+        const titulo = document.createElement('h2');
+        titulo.textContent = categoriaTitulo;
+        section.appendChild(titulo);
 
-        const fondoBoton = document.createElement('div');
-        fondoBoton.classList.add('fondoBoton');
+        // Crear las cartas de los productos de la categoría
+        categoriaProductos.forEach((producto) => {
+            const card = document.createElement('div');
+            card.classList.add('card');
 
-        const botonDetalles = document.createElement('button');
-        botonDetalles.classList.add('botonDetalles');
-        const enlaceDetalles = document.createElement('a');
-        enlaceDetalles.href = '#'; // Puedes cambiar esto a un enlace dinámico
-        enlaceDetalles.textContent = 'View Details';
-        botonDetalles.appendChild(enlaceDetalles);
-        fondoBoton.appendChild(botonDetalles);
-        cardHeader.appendChild(fondoBoton);
+            const cardHeader = document.createElement('div');
+            cardHeader.classList.add('cardHeader');
 
-        // Estructura del cuerpo de la carta
-        const cardBody = document.createElement('div');
-        cardBody.classList.add('cardBody');
+            const img = document.createElement('img');
+            img.src = producto.IMAGEN;
+            img.alt = producto.NOMBRE;
+            img.classList.add('cardImagen');
+            cardHeader.appendChild(img);
 
-        const cardContent = document.createElement('div');
-        cardContent.classList.add('cardContent');
+            const fondoBoton = document.createElement('div');
+            fondoBoton.classList.add('fondoBoton');
 
-        const titulo = document.createElement('h3');
-        titulo.classList.add('cardTitulo');
-        titulo.textContent = producto.NOMBRE; // Usar el atributo NOMBRE de la base de datos
-        cardContent.appendChild(titulo);
+            const botonDetalles = document.createElement('button');
+            botonDetalles.classList.add('botonDetalles');
+            const enlaceDetalles = document.createElement('a');
+            enlaceDetalles.href = '#'; // Aquí puedes redirigir a una página de detalles del producto
+            enlaceDetalles.textContent = 'View Details';
+            botonDetalles.appendChild(enlaceDetalles);
+            fondoBoton.appendChild(botonDetalles);
+            cardHeader.appendChild(fondoBoton);
 
-        const calificacion = document.createElement('div');
-        calificacion.classList.add('cardCalificacion');
-        calificacion.textContent = '⭐'.repeat(Math.floor(producto.CALIFICACION)) + '☆'; // Calificación con estrellas
-        cardContent.appendChild(calificacion);
+            const cardBody = document.createElement('div');
+            cardBody.classList.add('cardBody');
 
-        const precio = document.createElement('p');
-        precio.classList.add('cardPrecio');
-        precio.textContent = `US$ ${producto.PRECIO}`; // Usar el atributo PRECIO de la base de datos
-        cardContent.appendChild(precio);
+            const cardContent = document.createElement('div');
+            cardContent.classList.add('cardContent');
 
-        const descuento = document.createElement('p');
-        descuento.classList.add('cardDescuento');
-        descuento.textContent = `Ahorra ${producto.DESCUENTO}%`; // Usar el atributo DESCUENTO
-        cardContent.appendChild(descuento);
+            const titulo = document.createElement('h3');
+            titulo.classList.add('cardTitulo');
+            titulo.textContent = producto.NOMBRE;
+            cardContent.appendChild(titulo);
 
-        cardBody.appendChild(cardContent);
+            const calificacion = document.createElement('div');
+            calificacion.classList.add('cardCalificacion');
+            calificacion.textContent = '⭐'.repeat(Math.floor(producto.CALIFICACION)) + '☆';
+            cardContent.appendChild(calificacion);
 
-        // Agregar header y body a la carta
-        card.appendChild(cardHeader);
-        card.appendChild(cardBody);
+            const precio = document.createElement('p');
+            precio.classList.add('cardPrecio');
+            precio.textContent = `US$ ${producto.PRECIO}`;
+            cardContent.appendChild(precio);
 
-        // Agregar la carta al contenedor
-        container.appendChild(card);
+            const descuento = document.createElement('p');
+            descuento.classList.add('cardDescuento');
+            descuento.textContent = `Ahorra ${producto.DESCUENTO}%`;
+            cardContent.appendChild(descuento);
+
+            cardBody.appendChild(cardContent);
+            card.appendChild(cardHeader);
+            card.appendChild(cardBody);
+
+            section.appendChild(card);
+        });
+
+        container.appendChild(section);
     });
 }
