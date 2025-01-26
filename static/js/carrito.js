@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tbody = document.querySelector('.cartTable tbody');
     const subtotalElement = document.querySelector('.subtotal');
     const btnAgregar = document.getElementById('btnAgregar'); // Botón de agregar
+    const btnComprar = document.getElementById('btnComprar'); // Botón "Comprar ahora"
 
     // Inicializar la tabla del carrito vacía o con productos desde sessionStorage
     function actualizarCarrito() {
@@ -41,19 +42,28 @@ document.addEventListener('DOMContentLoaded', () => {
     // Eliminar producto del carrito
     tbody.addEventListener('click', (e) => {
         if (e.target.classList.contains('deleteButton')) {
-            const id = e.target.getAttribute('data-id');
-            const index = carrito.findIndex((producto) => producto.id === id);
-            if (index !== -1) {
-                carrito.splice(index, 1); // Eliminar el producto del carrito
-                sessionStorage.setItem('carrito', JSON.stringify(carrito)); // Actualizar sessionStorage
-                actualizarCarrito(); // Actualizar la tabla
-            }
+            const index = e.target.getAttribute('data-index'); // Usar índice único
+            carrito.splice(index, 1); // Eliminar el producto del carrito
+            sessionStorage.setItem('carrito', JSON.stringify(carrito)); // Actualizar sessionStorage
+            actualizarCarrito(); // Actualizar la tabla
         }
     });
 
     // Redirigir el botón "Agregar" a la página de la librería
     btnAgregar.addEventListener('click', () => {
         window.location.href = '/libreria'; // Ajustar la URL según tu configuración
+    });
+
+    // Manejar el botón "Comprar ahora"
+    btnComprar.addEventListener('click', () => {
+        if (carrito.length === 0) {
+            alert('No hay productos en el carrito para comprar.');
+        } else {
+            alert('¡Compra realizada con éxito!');
+            sessionStorage.removeItem('carrito'); // Vaciar el carrito
+            subtotalElement.textContent = `Subtotal: $0.00`; // Restablecer subtotal
+            actualizarCarrito(); // Actualizar la tabla
+        }
     });
 
     actualizarCarrito(); // Mostrar productos al cargar la página
