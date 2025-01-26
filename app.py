@@ -542,189 +542,90 @@ def get_productos_por_categoria(id_categoria):
 
 @app.route('/compras', methods=['POST'])
 def registrar_compra():
-    """
-    Registrar una nueva compra con opción de combinar GiftCard y Tarjeta.
-    """
-    datos = request.json
-    id_cliente = datos.get('id_cliente')
-    productos = datos.get('productos')  
-    metodo_pago = datos.get('metodo_pago')  
-    detalles_pago = datos.get('detalles_pago')  
-
-    # Validación inicial
-    if not id_cliente or not productos or not metodo_pago:
-        return jsonify({"error": "Campos obligatorios: id_cliente, productos, metodo_pago"}), 400
-    if metodo_pago not in ["GiftCard", "Tarjeta", "Combinado"]:
-        return jsonify({"error": "Método de pago inválido"}), 400
+    data = request.json
 
     try:
+        # Extraer datos principales
+        id_cliente = data['id_cliente']
+        id_direccion = data['id_direccion']
+        productos = data['productos']  # Lista de productos con id y cantidad
+
+        total_importe = 0
+        detalles = []
+
+        # Conexión a la base de datos
         conn = get_db_connection()
-        cursor = conn.cursor()
+        cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-        # Verificar cliente
-        cursor.execute("SELECT * FROM cliente WHERE id_cliente = %s", (id_cliente,))
-        if not cursor.fetchone():
-            return jsonify({"error": "Cliente no encontrado"}), 404
+        # Validar productos y calcular totales
+        for prod in productos:
+            cursor.execute("SELECT id_producto, precio, stock FROM producto WHERE id_producto = %s", (prod['id_producto'],))
+            producto = cursor.fetchone()
 
-        # Calcular precio total de los productos
-        total = Decimal(0)  # Usamos Decimal para asegurar precisión
-        for producto in productos:
-            id_producto = producto.get('id_producto')
-            cantidad = producto.get('cantidad')
-            if not id_producto or not cantidad:
-                return jsonify({"error": "Cada producto debe tener id_producto y cantidad"}), 400
+            if not producto:
+                return jsonify({'error': f"Producto con ID {prod['id_producto']} no encontrado"}), 404
 
-            cursor.execute(
-                "SELECT precio, descuento, stock FROM producto WHERE id_producto = %s FOR UPDATE", 
-                (id_producto,)
-            )
-            producto_data = cursor.fetchone()
-            if not producto_data:
-                return jsonify({"error": f"Producto con ID {id_producto} no encontrado"}), 404
-            precio, descuento, stock = producto_data
+            if producto['stock'] < prod['cantidad']:
+                return jsonify({'error': f"Stock insuficiente para el producto {producto['id_producto']}"}), 400
 
-            if stock < cantidad:
-                return jsonify({"error": f"Stock insuficiente para el producto {id_producto}"}), 400
+            subtotal = Decimal(producto['precio']) * Decimal(prod['cantidad'])
+            total_importe += subtotal
 
-            precio_final = Decimal(precio) * (Decimal(1) - Decimal(descuento) / Decimal(100))
-            total += precio_final * Decimal(cantidad)
+            detalles.append({
+                'id_producto': producto['id_producto'],
+                'cantidad': prod['cantidad'],
+                'precio_unitario': producto['precio'],
+                'subtotal': subtotal
+            })
 
-        # Manejar métodos de pago
-        restante = total
-        if metodo_pago == "GiftCard":
-            # Verificamos si el ID de GiftCard está presente en los detalles del pago
-            id_giftcard = detalles_pago.get('id_giftcard')
-            if not id_giftcard:
-                return jsonify({"error": "ID de GiftCard es requerido para este método de pago"}), 400
+        # Calcular impuestos (10%) y precio total
+        impuestos = total_importe * Decimal('0.10')
+        precio_total = total_importe + impuestos
 
-            # Verificamos el saldo de la GiftCard
-            cursor.execute("SELECT saldo FROM gift_card WHERE id_gift = %s", (id_giftcard,))
-            giftcard_data = cursor.fetchone()
-            if not giftcard_data:
-                return jsonify({"error": "GiftCard no encontrada"}), 404
-
-            saldo_giftcard = Decimal(giftcard_data[0])  # Convertimos saldo a Decimal
-            if saldo_giftcard < total:
-                return jsonify({"error": "Saldo insuficiente en la GiftCard"}), 400
-
-            # Si el saldo es suficiente, actualizamos el saldo de la GiftCard
-            cursor.execute("UPDATE gift_card SET saldo = saldo - %s WHERE id_gift = %s", (total, id_giftcard))
-            restante = Decimal(0)  # Ya no hay saldo restante
-
-        elif metodo_pago == "Tarjeta":
-            # Verificamos si los detalles de la tarjeta están presentes
-            tarjeta_data = detalles_pago.get('tarjeta')
-            if not tarjeta_data:
-                return jsonify({"error": "Se requieren detalles de la tarjeta para este método de pago"}), 400
-
-            # Verificamos la validez de la tarjeta en la base de datos
-            cursor.execute(
-                """
-                SELECT * FROM tarjeta WHERE num_tarjeta = %s AND nombre = %s
-                AND fecha_vencimiento = %s AND cvv = %s
-                """,
-                (
-                    tarjeta_data.get('num_tarjeta'),
-                    tarjeta_data.get('nombre'),
-                    tarjeta_data.get('fecha_vencimiento'),
-                    tarjeta_data.get('cvv'),
-                ),
-            )
-            if not cursor.fetchone():
-                return jsonify({"error": "Detalles de tarjeta inválidos"}), 400
-
-            # En este caso, el total es cobrado directamente con la tarjeta
-            restante = total
-
-        elif metodo_pago == "Combinado":
-            # Primero, tratamos la GiftCard
-            id_giftcard = detalles_pago.get('id_giftcard')
-            if not id_giftcard:
-                return jsonify({"error": "ID de GiftCard es requerido para el pago combinado"}), 400
-
-            cursor.execute("SELECT saldo FROM gift_card WHERE id_gift = %s", (id_giftcard,))
-            giftcard_data = cursor.fetchone()
-            if not giftcard_data:
-                return jsonify({"error": "GiftCard no encontrada"}), 404
-
-            saldo_giftcard = Decimal(giftcard_data[0])  # Convertimos saldo a Decimal
-            if saldo_giftcard >= total:
-                restante = Decimal(0)  # No hay saldo restante
-                cursor.execute("UPDATE gift_card SET saldo = saldo - %s WHERE id_gift = %s", (total, id_giftcard))
-            else:
-                restante = total - saldo_giftcard  # Resta el saldo de la GiftCard
-                cursor.execute("UPDATE gift_card SET saldo = 0 WHERE id_gift = %s", (id_giftcard,))
-
-            # Después, verificamos si se requiere una tarjeta para el saldo restante
-            if restante > 0:
-                tarjeta_data = detalles_pago.get('tarjeta')
-                if not tarjeta_data:
-                    return jsonify({"error": "Se requieren detalles de la tarjeta para completar el pago"}), 400
-
-                # Validación de la tarjeta
-                cursor.execute(
-                    """
-                    SELECT * FROM tarjeta WHERE num_tarjeta = %s AND nombre = %s
-                    AND fecha_vencimiento = %s AND cvv = %s
-                    """,
-                    (
-                        tarjeta_data.get('num_tarjeta'),
-                        tarjeta_data.get('nombre'),
-                        tarjeta_data.get('fecha_vencimiento'),
-                        tarjeta_data.get('cvv'),
-                    ),
-                )
-                print(tarjeta_data)
-
-                if not cursor.fetchone():
-                    return jsonify({"error": "Detalles de tarjeta inválidos"}), 400
-
-        # Registrar la compra
-        impuesto = total * Decimal(0.12)
-        precio_total = total + impuesto
+        # Insertar la compra en la tabla COMPRA
         cursor.execute(
             """
-            INSERT INTO compra (id_cliente, importe, impuesto, precio_total, metodo_pago, fecha) 
-            VALUES (%s, %s, %s, %s, %s, NOW()) RETURNING id_compra
+            INSERT INTO compra (id_cliente, id_direccion, impuestos, importe, precio_total)
+            VALUES (%s, %s, %s, %s, %s) RETURNING id_compra
             """,
-            (id_cliente, total, impuesto, precio_total, metodo_pago),
+            (id_cliente, id_direccion, impuestos, total_importe, precio_total)
         )
-        id_compra = cursor.fetchone()[0]
+        id_compra = cursor.fetchone()['id_compra']
 
-        # Registrar productos y reducir stock
-        for producto in productos:
-            id_producto = producto.get('id_producto')
-            cantidad = producto.get('cantidad')
-            cursor.execute("UPDATE producto SET stock = stock - %s WHERE id_producto = %s", (cantidad, id_producto))
-            precio_unitario = Decimal(producto_data[0]) * (Decimal(1) - Decimal(producto_data[1]) / Decimal(100))
+        # Insertar los detalles de la compra en la tabla DETALLE_COMPRA
+        for detalle in detalles:
             cursor.execute(
                 """
-                INSERT INTO detalle_compra (id_compra, id_producto, cantidad, precio_unitario, subtotal) 
+                INSERT INTO detalle_compra (id_producto, id_compra, cantidad, precio_unitario, subtotal)
                 VALUES (%s, %s, %s, %s, %s)
                 """,
-                (id_compra, id_producto, cantidad, precio_unitario, precio_unitario * Decimal(cantidad)),
+                (detalle['id_producto'], id_compra, detalle['cantidad'], detalle['precio_unitario'], detalle['subtotal'])
             )
 
-        # Registrar método de pago
-        cursor.execute(
-            """
-            INSERT INTO metodo_de_pago (id_compra, tipo) VALUES (%s, %s)
-            """,
-            (id_compra, metodo_pago),
-        )
+            # Reducir stock del producto
+            cursor.execute(
+                "UPDATE producto SET stock = stock - %s WHERE id_producto = %s",
+                (detalle['cantidad'], detalle['id_producto'])
+            )
 
+        # Confirmar transacción
         conn.commit()
-        return jsonify({"message": "Compra registrada exitosamente", "id_compra": id_compra}), 201
+        return jsonify({'message': 'Compra registrada exitosamente', 'id_compra': id_compra}), 201
 
     except Exception as e:
-        conn.rollback()
-        return jsonify({"error": str(e)}), 500
+        # Revertir cambios en caso de error
+        if conn:
+            conn.rollback()
+        return jsonify({'error': str(e)}), 500
 
     finally:
-        cursor.close()
-        conn.close()
+        # Cerrar la conexión
+        if cursor:
+            cursor.close()
+        if conn:
+            conn.close()
 
-        
+      
         
 @app.route('/compras/<int:cliente_id>', methods=['GET'])
 def historial_compras(cliente_id):
@@ -896,36 +797,141 @@ def obtener_metodos_pago():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-# Endpoint para agregar un nuevo método de pago
+
 @app.route('/metodo_pago', methods=['POST'])
-def agregar_metodo_pago():
+def registrar_metodo_pago():
+    data = request.json
+    id_compra = data.get("id_compra")
+    metodo_pago = data.get("metodo_pago")  # "tarjeta", "giftcard" o "ambos"
+    tarjeta = data.get("tarjeta", {})  # Diccionario con info de la tarjeta
+    giftcard = data.get("giftcard", {})  # Diccionario con info de la gift card
+
     try:
-        datos = request.json
-
-        id_compra = datos.get('id_compra')
-        tipo_pago = datos.get('tipo_pago')
-
-        if not id_compra or not tipo_pago:
-            return jsonify({'error': 'Faltan datos requeridos: id_compra, tipo_pago'}), 400
-
+        # Conexión a la base de datos
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        query = """
-        INSERT INTO metodo_de_pago (id_compra, tipo_pago)
-        VALUES (%s, %s)
-        RETURNING id_metodopago
-        """
-        cursor.execute(query, (id_compra, tipo_pago))
-        nuevo_id = cursor.fetchone()[0]
+        # Verificar que la compra exista
+        cursor.execute("SELECT precio_total FROM COMPRA WHERE id_compra = %s", (id_compra,))
+        compra = cursor.fetchone()
+        if not compra:
+            return jsonify({"error": "La compra no existe"}), 404
 
+        precio_total = Decimal(compra[0])  # Total de la compra
+        restante = precio_total  # Para manejar el saldo restante
+
+        # Registrar método de pago
+        if metodo_pago == "tarjeta":
+            # Validar datos de la tarjeta
+            if not tarjeta.get("num_tarjeta") or not tarjeta.get("fecha_vencimiento") or not tarjeta.get("cvv"):
+                return jsonify({"error": "Datos incompletos de la tarjeta"}), 400
+
+            # Insertar en METODO_DE_PAGO
+            cursor.execute(
+                """
+                INSERT INTO METODO_DE_PAGO (id_compra, tipo_pago)
+                VALUES (%s, %s) RETURNING id_metodopago
+                """,
+                (id_compra, "tarjeta")
+            )
+            id_metodopago = cursor.fetchone()[0]
+
+            # Insertar en TARJETA
+            cursor.execute(
+                """
+                INSERT INTO TARJETA (num_tarjeta, id_metodopago, nombre, fecha_vencimiento, cvv)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (tarjeta["num_tarjeta"], id_metodopago, tarjeta.get("nombre"), tarjeta["fecha_vencimiento"], tarjeta["cvv"])
+            )
+            restante = Decimal(0)  # Se cubrió todo con la tarjeta
+
+        elif metodo_pago == "giftcard":
+            # Validar existencia y saldo de la gift card
+            cursor.execute("SELECT saldo FROM GIFT_CARD WHERE id_gift = %s", (giftcard.get("id_gift"),))
+            giftcard_data = cursor.fetchone()
+            if not giftcard_data:
+                return jsonify({"error": "La gift card no existe"}), 404
+
+            saldo_giftcard = Decimal(giftcard_data[0])
+            if saldo_giftcard < precio_total:
+                return jsonify({"error": "Saldo insuficiente en la gift card"}), 400
+
+            # Actualizar saldo de la gift card
+            nuevo_saldo = saldo_giftcard - precio_total
+            cursor.execute(
+                "UPDATE GIFT_CARD SET saldo = %s WHERE id_gift = %s",
+                (nuevo_saldo, giftcard["id_gift"])
+            )
+
+            # Insertar en METODO_DE_PAGO
+            cursor.execute(
+                """
+                INSERT INTO METODO_DE_PAGO (id_compra, tipo_pago)
+                VALUES (%s, %s)
+                """,
+                (id_compra, "giftcard")
+            )
+            restante = Decimal(0)  # Se cubrió todo con la gift card
+
+        elif metodo_pago == "ambos":
+            # Validar datos de la tarjeta y gift card
+            if not tarjeta.get("num_tarjeta") or not tarjeta.get("fecha_vencimiento") or not tarjeta.get("cvv"):
+                return jsonify({"error": "Datos incompletos de la tarjeta"}), 400
+
+            cursor.execute("SELECT saldo FROM GIFT_CARD WHERE id_gift = %s", (giftcard.get("id_gift"),))
+            giftcard_data = cursor.fetchone()
+            if not giftcard_data:
+                return jsonify({"error": "La gift card no existe"}), 404
+
+            saldo_giftcard = Decimal(giftcard_data[0])
+            pago_giftcard = min(saldo_giftcard, precio_total)
+            restante -= pago_giftcard
+
+            # Actualizar saldo de la gift card
+            cursor.execute(
+                "UPDATE GIFT_CARD SET saldo = %s WHERE id_gift = %s",
+                (saldo_giftcard - pago_giftcard, giftcard["id_gift"])
+            )
+
+            # Insertar en METODO_DE_PAGO (gift card)
+            cursor.execute(
+                """
+                INSERT INTO METODO_DE_PAGO (id_compra, tipo_pago)
+                VALUES (%s, %s)
+                """,
+                (id_compra, "giftcard")
+            )
+
+            # Insertar en METODO_DE_PAGO (tarjeta)
+            cursor.execute(
+                """
+                INSERT INTO METODO_DE_PAGO (id_compra, tipo_pago)
+                VALUES (%s, %s) RETURNING id_metodopago
+                """,
+                (id_compra, "tarjeta")
+            )
+            id_metodopago = cursor.fetchone()[0]
+
+            # Insertar en TARJETA
+            cursor.execute(
+                """
+                INSERT INTO TARJETA (num_tarjeta, id_metodopago, nombre, fecha_vencimiento, cvv)
+                VALUES (%s, %s, %s, %s, %s)
+                """,
+                (tarjeta["num_tarjeta"], id_metodopago, tarjeta.get("nombre"), tarjeta["fecha_vencimiento"], tarjeta["cvv"])
+            )
+
+        # Confirmar cambios
         conn.commit()
+        return jsonify({"message": "Método de pago registrado exitosamente"}), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
         cursor.close()
         conn.close()
-
-        return jsonify({'mensaje': 'Método de pago agregado exitosamente', 'id_metodopago': nuevo_id}), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/tarjeta', methods=['GET'])
