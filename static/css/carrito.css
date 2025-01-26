@@ -78,6 +78,16 @@ main {
 }
 .paymentMethod {
     flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 20px;
+    background-color: #fafafa;
+
+    /* Hacer que quede estática */
+    position: sticky;
+    top: 20px;
+    max-height: 500px; /* Ajusta según sea necesario */
+    overflow-y: auto;
 }
 .tituloCheckout h1, .tituloPayment h1 {
     font-size: 24px;
@@ -179,12 +189,73 @@ button:hover {
     margin-top: 20px;
 }
 
-.cartTable th, .cartTable td {
+.cartTable th {
     padding: 10px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
 
+.cartTable td {
+    text-align: center;
+    vertical-align: middle;
+}
+
+.cartTable td:nth-child(4) {
+    text-align: center;
+}
+
+.cartTable td:nth-child(4) .btnEditar {
+    display: inline-block;
+    margin: 0;
+}
+
+.cartTable td:nth-child(5) {
+    text-align: center; /* Centrar la columna de Eliminar */
+}
+
+.cartTable td:nth-child(5) .btnEliminar {
+    display: inline-block;
+    margin: 0;
+}
+
+.accionesProductos {
+    display: flex; /* Asegura que los elementos estén en línea */
+    justify-content: center; /* Coloca los botones a izquierda y derecha */
+    align-items: center; /* Centra los elementos verticalmente */
+    gap: 15px; /* Espacio entre los botones */
+    margin: 10px; /* Espaciado superior e inferior */
+}
+
+.accionesProductos button {
+    padding: 10px 10px; /* Reduce el tamaño del botón */
+    font-size: 14px; /* Ajusta el tamaño del texto */
+    border-radius: 5px; /* Botones con esquinas redondeadas */
+    border: 1px solid #45a049; /* Opcional: borde ligero */
+    background-color: #4CAF50; /* Color de fondo claro */
+    text-align: center; /* Asegura que el texto esté centrado */
+    width: auto; /* Ajusta el tamaño del botón según el texto */
+    cursor: pointer;
+}
+
+.accionesProductos button:hover {
+    background-color: #7bf157; /* Color de fondo al pasar el mouse */
+}
+
+.accionesProductos #btnAgregar {
+    text-align: left;
+}
+
+.accionesProductos #btnBuscar {
+    text-align: right;
+}
+
+.totalContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centra todo horizontalmente */
+    justify-content: center;
+    margin-top: 20px; /* Espaciado superior */
+}
 #modoOscuro:checked ~ main .cartTable th,
 #modoOscuro:checked ~ main .cartTable td {
     background-color: var(--verde-oscuro);

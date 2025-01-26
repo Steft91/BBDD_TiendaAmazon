@@ -1,124 +1,60 @@
-// Cargar productos en la tabla al cargar la página
-    async function cargarProductos() {
-        try {
-            const response = await fetch('/productos', { method: 'GET' });
-            const productos = await response.json();
-            const tbody = document.querySelector('.cartTable tbody');
-            tbody.innerHTML = '';
+document.addEventListener('DOMContentLoaded', () => {
+    const carrito = JSON.parse(sessionStorage.getItem('carrito')) || []; // Cargar carrito desde sessionStorage
+    const tbody = document.querySelector('.cartTable tbody');
+    const subtotalElement = document.querySelector('.subtotal');
+    const btnAgregar = document.getElementById('btnAgregar'); // Botón de agregar
 
-            productos.forEach(producto => {
-                const fila = document.createElement('tr');
-                fila.innerHTML = `
-                    <td><img src="${producto.imagen}" alt="${producto.nombre}" class="productImage"> ${producto.nombre}</td>
-                    <td>${producto.precio}</td>
-                    <td>
-                        <input type="number" value="${producto.cantidad}" min="1" class="quantityInput" onchange="editarProducto(${producto.id}, this.value)">
-                    </td>
-                    <td>
-                        <button onclick="eliminarProducto(${producto.id})">Eliminar</button>
-                    </td>
-                `;
-                tbody.appendChild(fila);
-            });
-        } catch (error) {
-            console.error('Error al cargar productos:', error);
+    // Inicializar la tabla del carrito vacía o con productos desde sessionStorage
+    function actualizarCarrito() {
+        tbody.innerHTML = ''; // Vaciar la tabla
+
+        if (carrito.length === 0) {
+            // Mostrar un mensaje si el carrito está vacío
+            const filaVacia = document.createElement('tr');
+            filaVacia.innerHTML = `<td colspan="4" style="text-align: center;">El carrito está vacío</td>`;
+            tbody.appendChild(filaVacia);
+            subtotalElement.textContent = `Subtotal: $0.00`;
+            return;
         }
+
+        // Renderizar productos en la tabla
+        let subtotal = 0;
+
+        carrito.forEach((producto) => {
+            const fila = document.createElement('tr');
+            fila.innerHTML = `
+                <td><img src="${producto.imagen}" alt="${producto.nombre}" class="productImage"> ${producto.nombre}</td>
+                <td>$${producto.precio}</td>
+                <td>${producto.cantidad}</td>
+                <td>
+                    <button class="deleteButton" data-id="${producto.id}">Eliminar</button>
+                </td>
+            `;
+            tbody.appendChild(fila);
+
+            subtotal += producto.precio * producto.cantidad;
+        });
+
+        subtotalElement.textContent = `Subtotal: $${subtotal.toFixed(2)}`;
     }
 
-    // Agregar un nuevo producto
-    async function agregarProducto() {
-        const nombre = prompt('Ingrese el nombre del producto:');
-        const precio = parseFloat(prompt('Ingrese el precio del producto:'));
-        const cantidad = parseInt(prompt('Ingrese la cantidad del producto:'));
-
-        if (nombre && !isNaN(precio) && !isNaN(cantidad)) {
-            try {
-                const response = await fetch('/productos', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nombre, precio, cantidad })
-                });
-                if (response.ok) {
-                    alert('Producto agregado exitosamente');
-                    cargarProductos();
-                } else {
-                    alert('Error al agregar producto');
-                }
-            } catch (error) {
-                console.error('Error al agregar producto:', error);
-            }
-        } else {
-            alert('Datos inválidos');
-        }
-    }
-
-    // Editar un producto existente
-    async function editarProducto(id, nuevaCantidad) {
-        try {
-            const response = await fetch(`/productos/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ cantidad: nuevaCantidad })
-            });
-            if (response.ok) {
-                alert('Producto actualizado exitosamente');
-                cargarProductos();
-            } else {
-                alert('Error al actualizar producto');
-            }
-        } catch (error) {
-            console.error('Error al actualizar producto:', error);
-        }
-    }
-
-    // Eliminar un producto
-    async function eliminarProducto(id) {
-        if (confirm('¿Está seguro de que desea eliminar este producto?')) {
-            try {
-                const response = await fetch(`/productos/${id}`, { method: 'DELETE' });
-                if (response.ok) {
-                    alert('Producto eliminado exitosamente');
-                    cargarProductos();
-                } else {
-                    alert('Error al eliminar producto');
-                }
-            } catch (error) {
-                console.error('Error al eliminar producto:', error);
+    // Eliminar producto del carrito
+    tbody.addEventListener('click', (e) => {
+        if (e.target.classList.contains('deleteButton')) {
+            const id = e.target.getAttribute('data-id');
+            const index = carrito.findIndex((producto) => producto.id === id);
+            if (index !== -1) {
+                carrito.splice(index, 1); // Eliminar el producto del carrito
+                sessionStorage.setItem('carrito', JSON.stringify(carrito)); // Actualizar sessionStorage
+                actualizarCarrito(); // Actualizar la tabla
             }
         }
-    }
-
-    // Buscar un producto por nombre
-    async function buscarProducto() {
-        const nombre = prompt('Ingrese el nombre del producto a buscar:');
-        if (nombre) {
-            try {
-                const response = await fetch(`/productos/buscar?nombre=${encodeURIComponent(nombre)}`, { method: 'GET' });
-                const productos = await response.json();
-                if (productos.length > 0) {
-                    const tbody = document.querySelector('.cartTable tbody');
-                    tbody.innerHTML = '';
-                    productos.forEach(producto => {
-                        const fila = document.createElement('tr');
-                        fila.innerHTML = `
-                            <td><img src="${producto.imagen}" alt="${producto.nombre}" class="productImage"> ${producto.nombre}</td>
-                            <td>${producto.precio}</td>
-                            <td>${producto.cantidad}</td>
-                        `;
-                        tbody.appendChild(fila);
-                    });
-                } else {
-                    alert('Producto no encontrado');
-                }
-            } catch (error) {
-                console.error('Error al buscar producto:', error);
-            }
-        }
-    }
-
-    // Asociar botones con las funciones
-    document.addEventListener('DOMContentLoaded', () => {
-        cargarProductos();
-        document.getElementById('btnAgregar').addEventListener('click', agregarProducto);
-        document.getElementById('btnBuscar').addEventListener('click', buscarProducto);
     });
+
+    // Redirigir el botón "Agregar" a la página de la librería
+    btnAgregar.addEventListener('click', () => {
+        window.location.href = '/libreria'; // Ajustar la URL según tu configuración
+    });
+
+    actualizarCarrito(); // Mostrar productos al cargar la página
+});
