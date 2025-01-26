@@ -333,3 +333,102 @@ textarea {
     background-color: rgb(34, 139, 34);
     transform: scale(1.05);
 }
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .sidebar ul li {
+    margin: 10px 0;
+  }
+
+  .sidebar ul li a {
+    text-decoration: none;
+    color: #4CAF50; /* Verde elegante */
+    font-weight: bold;
+    font-size: 1rem;
+  }
+
+  .content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center; /* Centrar las tarjetas */
+  }
+
+  .card {
+    width: calc(25% - 15px); /* Tarjetas más pequeñas */
+    height: 27rem;
+    background: #f9f9f9; /* Fondo claro */
+    border: 1px solid #ddd;
+    border-radius: 12px; /* Bordes más redondeados */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease-in-out; /* Animación suave */
+  }
+
+  .card:hover {
+    transform: scale(1.05); /* Efecto hover */
+  }
+
+  .card img {
+    width: 80%;
+    padding: 15%;
+    padding-left: 5rem;
+    height: 180px; /* Imagen más pequeña */
+    object-fit: cover; /* Ajustar imagen */
+  }
+
+  .card-body {
+    padding: 10px;
+    font-family: Arial, sans-serif;
+  }
+
+  .card-body h3 {
+    font-size: 1rem; /* Tamaño de fuente más pequeño */
+    margin: 0 0 8px;
+    color: #333; /* Texto oscuro */
+    line-height: 1.2; /* Mejor manejo de líneas */
+    word-wrap: break-word; /* Permitir salto de línea */
+  }
+
+  .card-body p {
+    margin: 5px 0;
+    color: #555; /* Texto gris */
+    font-size: 0.9rem; /* Fuente más pequeña */
+  }
+
+  .card-footer {
+    margin-top: auto;
+    padding: 10px;
+    background: #f1f1f1;
+    text-align: center;
+  }
+
+  .card-footer button {
+    background: #4CAF50; /* Verde elegante */
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem; /* Fuente más pequeña */
+    transition: background 0.2s ease-in-out;
+  }
+
+  .card-footer button:hover {
+    background: #45a049; /* Hover más oscuro */
+  }
+
+  h2 {
+    width: 100%;
+    text-align: left;
+    font-size: 1.2rem; /* Título más pequeño */
+    color: #4CAF50;
+    margin: 20px 0 10px;
+    border-bottom: 2px solid #ddd; /* Línea separadora */
+    padding-bottom: 5px;
+  }
