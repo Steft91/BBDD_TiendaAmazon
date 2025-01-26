@@ -13,7 +13,7 @@
     <input type="checkbox" id="modoOscuro" autofill="false">
     <label for="modoOscuro" class="modoOscuroInterruptor">🌙</label>
 
-    <!-- Header con navegación -->
+    <!-- Header -->
     <header>
         <nav>
             <a href="index.html">
@@ -38,99 +38,112 @@
 
     <!-- Contenido principal -->
     <main>
-        <!-- Título -->
-        <section class="textoPago">
-            <h1>Pago</h1>
+        <!-- Carrito de compra -->
+        <section class="shoppingCart">
+            <h1>Carrito de Compra</h1>
+            <table class="cartTable">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Vacío al cargar, se llena dinámicamente desde carrito.js -->
+                </tbody>
+            </table>
+            <div class="subtotal">
+                Subtotal: $0.00
+            </div>
+            <div class="accionesProductos">
+                <button id="btnAgregar" class="botonPequeño">Agregar Producto</button>
+                <button id="btnComprar">Comprar ahora</button>
+            </div>
         </section>
 
-        <!-- Carrito y métodos de pago -->
-        <section class="checkout">
-            <!-- Carrito de compra -->
-            <aside class="shoppingCart">
-                <h2>Carrito de compra</h2>
-                <table class="cartTable">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Precio</th>
-                            <th>Cantidad</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Vacío al cargar, se llena dinámicamente desde carrito.js -->
-                    </tbody>
-                </table>
-                <div class="subtotal">
-                    Subtotal: $0.00
-                </div>
-                <div class="accionesProductos">
-                    <button id="btnAgregar" class="botonPequeño">Agregar Producto</button>
-                    <button id="btnBuscar" class="botonPequeño">Buscar Producto</button>
-                    <button id="btnComprar">Comprar ahora</button>
-                </div>
-            </aside>
+        <!-- Métodos de pago -->
+        <section class="paymentOptions">
+            <h2>Métodos de Pago</h2>
+            <div class="payment-method">
+                <label>
+                    <input type="radio" name="payment" value="creditCard" id="creditCardOption">
+                    Tarjeta de Crédito
+                </label>
+                <label>
+                    <input type="radio" name="payment" value="giftCard" id="giftCardOption">
+                    Gift Card
+                </label>
+                <label>
+                    <input type="radio" name="payment" value="bankTransfer" id="bankTransferOption">
+                    Transferencia Bancaria
+                </label>
+            </div>
 
-            <!-- Métodos de pago -->
-            <section class="paymentMethod">
-                <div class="information">
-                    <h2>Tu información</h2>
-                    <div>
-                        <label>E-mail</label><br>
-                        <input type="text" placeholder="jeff@gmail.com">
-                    </div>
-                </div>
-                <div class="paymentOptions">
-                    <h3>Métodos de pago</h3>
-                    <div class="payment-method">
-                        <label>
-                            <input type="radio" name="payment" value="Tarjeta de crédito" id="creditCard">
-                            Tarjeta de crédito
-                        </label>
-                        <label>
-                            <input type="radio" name="payment" value="Gift card" id="giftCard">
-                            Gift card
-                        </label>
-                        <label>
-                            <input type="radio" name="payment" value="Transferencia bancaria" id="bankTransfer">
-                            Transferencia bancaria
-                        </label>
-                    </div>
-                    <!-- Detalles de la gift card -->
-                    <div id="giftCardDetails" style="display: none; margin-top: 20px;">
-                        <h4>Detalles de la Gift Card</h4>
-                        <p><strong>ID Gift Card:</strong> <span id="giftCardId"></span></p>
-                        <p><strong>ID Método de Pago:</strong> <span id="paymentMethodId"></span></p>
-                        <p><strong>Saldo:</strong> $<span id="giftCardBalance"></span></p>
-                        <p><strong>Fecha de Emisión:</strong> <span id="issueDate"></span></p>
-                        <p><strong>Fecha de Vencimiento:</strong> <span id="expiryDate"></span></p>
-                    </div>
-                </div>
-            </section>
+            <!-- Formulario para agregar tarjeta de crédito -->
+            <div id="creditCardForm" style="display: none;">
+                <h3>Agregar Tarjeta de Crédito</h3>
+                <form id="creditCardData">
+                    <label for="numTarjeta">Número de Tarjeta:</label>
+                    <input type="text" id="numTarjeta" required>
+
+                    <label for="nombreTarjeta">Nombre del Titular:</label>
+                    <input type="text" id="nombreTarjeta" required>
+
+                    <label for="fechaVencimiento">Fecha de Vencimiento:</label>
+                    <input type="date" id="fechaVencimiento" required>
+
+                    <label for="cvv">CVV:</label>
+                    <input type="text" id="cvv" maxlength="3" required>
+
+                    <button type="button" id="submitCreditCard">Guardar Tarjeta</button>
+                </form>
+            </div>
+
+            <!-- Formulario para agregar gift card -->
+            <div id="giftCardForm" style="display: none;">
+                <h3>Agregar Gift Card</h3>
+                <form id="giftCardData">
+                    <label for="idGiftCard">ID de Gift Card:</label>
+                    <input type="text" id="idGiftCard" required>
+
+                    <label for="saldoGiftCard">Saldo:</label>
+                    <input type="number" id="saldoGiftCard" required>
+
+                    <label for="fechaEmisionGiftCard">Fecha de Emisión:</label>
+                    <input type="date" id="fechaEmisionGiftCard" required>
+
+                    <label for="fechaExpedicionGiftCard">Fecha de Expedición:</label>
+                    <input type="date" id="fechaExpedicionGiftCard" required>
+
+                    <button type="button" id="submitGiftCard">Guardar Gift Card</button>
+                </form>
+            </div>
         </section>
-
-        <!-- Footer -->
-        <footer>
-            <section class="infoFooter">
-                <section class="logoFooter">
-                    <img src="/static/img/logo.png" alt="logo" class="fotoFooter">
-                    <h2>Simply Lovely</h2>
-                    <p> <i class="fa-solid fa-map-pin"></i> Moreno Bellido #200 y Av. Amazonas </p>
-                    <p> <i class="fa-solid fa-phone"></i> +593 998765412</p>
-                    <p><i class="fa-solid fa-envelope"></i><a href="mailto:elbosquedeloslibros@libreria.com">simplyLovely@tienda.com</a></p>
-                </section>
-                <section class="infoDerecha">
-                    <section class="redesSociales">
-                        <a href="https://www.facebook.com/?locale=es_LA" class="icono"><img src="/static/img/facebook.png" alt="Facebook" ></a>
-                        <a href="https://www.instagram.com/" class="icono"><img src="/static/img/Instagram.webp" alt="Ig" ></a>
-                        <a href="https://twitter.com/?lang=es" class="icono"><img src="/static/img/x.jpg" alt="X" ></a>
-                    </section>  
-                    &copy; Tienda Digital Simply Lovely
-                    <p><i class="fa-solid fa-people-group"></i>Hecho por el Grupo 3</p>              
-                </section>
-            </section>
-        </footer>
     </main>
+
+    <!-- Footer -->
+    <footer>
+        <section class="infoFooter">
+            <section class="logoFooter">
+                <img src="/static/img/logo.png" alt="logo" class="fotoFooter">
+                <h2>Simply Lovely</h2>
+                <p><i class="fa-solid fa-map-pin"></i> Moreno Bellido #200 y Av. Amazonas</p>
+                <p><i class="fa-solid fa-phone"></i> +593 998765412</p>
+                <p><i class="fa-solid fa-envelope"></i><a href="mailto:simplyLovely@tienda.com">simplyLovely@tienda.com</a></p>
+            </section>
+            <section class="infoDerecha">
+                <section class="redesSociales">
+                    <a href="https://www.facebook.com/?locale=es_LA" class="icono"><img src="/static/img/facebook.png" alt="Facebook"></a>
+                    <a href="https://www.instagram.com/" class="icono"><img src="/static/img/Instagram.webp" alt="Instagram"></a>
+                    <a href="https://twitter.com/?lang=es" class="icono"><img src="/static/img/x.jpg" alt="X"></a>
+                </section>
+                &copy; Tienda Digital Simply Lovely
+                <p><i class="fa-solid fa-people-group"></i> Hecho por el Grupo 3</p>
+            </section>
+        </section>
+    </footer>
 
     <!-- Script del carrito -->
     <script src="/static/js/carrito.js"></script>

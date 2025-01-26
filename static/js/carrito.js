@@ -2,24 +2,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const carrito = JSON.parse(sessionStorage.getItem('carrito')) || []; // Cargar carrito desde sessionStorage
     const tbody = document.querySelector('.cartTable tbody');
     const subtotalElement = document.querySelector('.subtotal');
-    const btnAgregar = document.getElementById('btnAgregar'); // Botón de agregar
-    const btnComprar = document.getElementById('btnComprar'); // Botón "Comprar ahora"
+    const btnAgregar = document.getElementById('btnAgregar'); // Botón para agregar más productos
+    const btnComprar = document.getElementById('btnComprar'); // Botón para comprar ahora
 
-    // Elementos para mostrar detalles de la gift card
-    const giftCardRadio = document.getElementById('giftCard');
-    const giftCardDetails = document.getElementById('giftCardDetails');
-    const giftCardId = document.getElementById('giftCardId');
-    const paymentMethodId = document.getElementById('paymentMethodId');
-    const giftCardBalance = document.getElementById('giftCardBalance');
-    const issueDate = document.getElementById('issueDate');
-    const expiryDate = document.getElementById('expiryDate');
+    // Métodos de pago
+    const creditCardOption = document.getElementById('creditCardOption');
+    const giftCardOption = document.getElementById('giftCardOption');
+    const bankTransferOption = document.getElementById('bankTransferOption');
 
-    // Inicializar la tabla del carrito vacía o con productos desde sessionStorage
+    const creditCardForm = document.getElementById('creditCardForm');
+    const giftCardForm = document.getElementById('giftCardForm');
+
+    const submitCreditCard = document.getElementById('submitCreditCard');
+    const submitGiftCard = document.getElementById('submitGiftCard');
+
+    // Inicializar el carrito
     function actualizarCarrito() {
         tbody.innerHTML = ''; // Vaciar la tabla
 
         if (carrito.length === 0) {
-            // Mostrar un mensaje si el carrito está vacío
             const filaVacia = document.createElement('tr');
             filaVacia.innerHTML = `<td colspan="4" style="text-align: center;">El carrito está vacío</td>`;
             tbody.appendChild(filaVacia);
@@ -27,17 +28,16 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Renderizar productos en la tabla
         let subtotal = 0;
 
-        carrito.forEach((producto) => {
+        carrito.forEach((producto, index) => {
             const fila = document.createElement('tr');
             fila.innerHTML = `
                 <td><img src="${producto.imagen}" alt="${producto.nombre}" class="productImage"> ${producto.nombre}</td>
                 <td>$${producto.precio}</td>
                 <td>${producto.cantidad}</td>
                 <td>
-                    <button class="deleteButton" data-id="${producto.id}">Eliminar</button>
+                    <button class="deleteButton" data-index="${index}">Eliminar</button>
                 </td>
             `;
             tbody.appendChild(fila);
@@ -51,22 +51,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Eliminar producto del carrito
     tbody.addEventListener('click', (e) => {
         if (e.target.classList.contains('deleteButton')) {
-            const id = e.target.getAttribute('data-id');
-            const index = carrito.findIndex((producto) => producto.id === id);
-            if (index !== -1) {
-                carrito.splice(index, 1); // Eliminar el producto del carrito
-                sessionStorage.setItem('carrito', JSON.stringify(carrito)); // Actualizar sessionStorage
-                actualizarCarrito(); // Actualizar la tabla
-            }
+            const index = parseInt(e.target.getAttribute('data-index'), 10);
+            carrito.splice(index, 1); // Eliminar el producto del carrito
+            sessionStorage.setItem('carrito', JSON.stringify(carrito)); // Actualizar sessionStorage
+            actualizarCarrito(); // Actualizar la tabla
         }
     });
 
-    // Redirigir el botón "Agregar" a la página de la librería
+    // Redirigir al catálogo
     btnAgregar.addEventListener('click', () => {
-        window.location.href = '/libreria'; // Ajustar la URL según tu configuración
+        window.location.href = '/libreria'; // Ajusta la URL según tu configuración
     });
 
-    // Manejar el botón "Comprar ahora"
+    // Comprar ahora
     btnComprar.addEventListener('click', () => {
         if (carrito.length === 0) {
             alert('No hay productos en el carrito para comprar.');
@@ -78,25 +75,115 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Mostrar detalles de la gift card
-    giftCardRadio.addEventListener('change', async () => {
+    // Métodos de pago
+    creditCardOption.addEventListener('change', () => {
+        creditCardForm.style.display = 'block';
+        giftCardForm.style.display = 'none';
+    });
+
+    giftCardOption.addEventListener('change', () => {
+        giftCardForm.style.display = 'block';
+        creditCardForm.style.display = 'none';
+    });
+
+    bankTransferOption.addEventListener('change', () => {
+        creditCardForm.style.display = 'none';
+        giftCardForm.style.display = 'none';
+        alert('La transferencia bancaria no requiere registro adicional.');
+    });
+
+    // Guardar tarjeta de crédito
+    submitCreditCard.addEventListener('click', async () => {
+        const numTarjeta = document.getElementById('numTarjeta').value;
+        const nombre = document.getElementById('nombreTarjeta').value;
+        const fechaVencimiento = document.getElementById('fechaVencimiento').value;
+        const cvv = document.getElementById('cvv').value;
+
+        if (!numTarjeta || !nombre || !fechaVencimiento || !cvv) {
+            alert('Todos los campos son obligatorios.');
+            return;
+        }
+
         try {
-            const response = await fetch('/giftcard/1'); // Reemplaza "1" con el ID dinámico si es necesario
+            const response = await fetch('/tarjeta', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    num_tarjeta: numTarjeta,
+                    id_metodopago: 1, // Ajusta el ID según la lógica
+                    nombre: nombre,
+                    fecha_vencimiento: fechaVencimiento,
+                    cvv: cvv
+                })
+            });
+
             if (response.ok) {
-                const data = await response.json();
-                giftCardId.textContent = data.id_gift;
-                paymentMethodId.textContent = data.id_metodo_pago;
-                giftCardBalance.textContent = data.saldo.toFixed(2);
-                issueDate.textContent = data.fecha_emision;
-                expiryDate.textContent = data.fecha_vencimiento;
-                giftCardDetails.style.display = 'block';
+                alert('Tarjeta de crédito registrada exitosamente.');
+                limpiarFormularioTarjeta();
             } else {
-                alert('No se encontraron detalles para esta gift card.');
+                const errorData = await response.json();
+                alert(`Error al registrar la tarjeta: ${errorData.error}`);
             }
         } catch (error) {
-            console.error('Error al cargar los detalles de la gift card:', error);
+            console.error('Error:', error);
+            alert('Ocurrió un error al registrar la tarjeta.');
         }
     });
 
-    actualizarCarrito(); // Mostrar productos al cargar la página
+    // Guardar gift card
+    submitGiftCard.addEventListener('click', async () => {
+        const idGift = document.getElementById('idGiftCard').value;
+        const saldo = document.getElementById('saldoGiftCard').value;
+        const fechaEmision = document.getElementById('fechaEmisionGiftCard').value;
+        const fechaExpedicion = document.getElementById('fechaExpedicionGiftCard').value;
+
+        if (!idGift || !saldo || !fechaEmision || !fechaExpedicion) {
+            alert('Todos los campos son obligatorios.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/gift_card', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id_gift: idGift,
+                    id_metodopago: 1, // Ajusta el ID según la lógica
+                    saldo: parseFloat(saldo),
+                    fecha_emision: fechaEmision,
+                    fecha_expedicion: fechaExpedicion
+                })
+            });
+
+            if (response.ok) {
+                alert('Gift card registrada exitosamente.');
+                limpiarFormularioGiftCard();
+            } else {
+                const errorData = await response.json();
+                alert(`Error al registrar la gift card: ${errorData.error}`);
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Ocurrió un error al registrar la gift card.');
+        }
+    });
+
+    // Limpiar formulario de tarjeta de crédito
+    function limpiarFormularioTarjeta() {
+        document.getElementById('numTarjeta').value = '';
+        document.getElementById('nombreTarjeta').value = '';
+        document.getElementById('fechaVencimiento').value = '';
+        document.getElementById('cvv').value = '';
+    }
+
+    // Limpiar formulario de gift card
+    function limpiarFormularioGiftCard() {
+        document.getElementById('idGiftCard').value = '';
+        document.getElementById('saldoGiftCard').value = '';
+        document.getElementById('fechaEmisionGiftCard').value = '';
+        document.getElementById('fechaExpedicionGiftCard').value = '';
+    }
+
+    // Cargar el carrito al cargar la página
+    actualizarCarrito();
 });
