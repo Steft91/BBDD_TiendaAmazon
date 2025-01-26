@@ -1,15 +1,17 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, session
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from decimal import Decimal
 
 app = Flask(__name__)
+app.secret_key = 'amazon'
+
 
 # Credenciales de la base de datos PostgreSQL
 DB_HOST = "localhost"
-DB_NAME = ""
+DB_NAME = "Amazon"
 DB_USER = "postgres"
-DB_PASSWORD = ""
+DB_PASSWORD = "adminS"
 
 # Conexión a la base de datos
 def get_db_connection():
@@ -19,6 +21,8 @@ def get_db_connection():
         user=DB_USER, 
         password=DB_PASSWORD,
     )
+    conn.set_client_encoding('UTF8')  # Esto asegura que se use UTF-8
+    return conn
 
 @app.route('/')
 def home():
@@ -31,10 +35,6 @@ def contacto():
 @app.route('/producto')
 def producto():
     return render_template('producto.html')
-
-@app.route('/login')
-def login():
-    return render_template('login.html')
 
 @app.route('/carrito')
 def carrito():
@@ -49,7 +49,77 @@ def libros():
     return render_template('libros.html')
 
 
-# Definición de rutas
+# Ruta para el login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        
+        # Verificación de credenciales en la base de datos
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM cliente WHERE correo = %s AND contrasena = %s', (email, password))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+
+        if user:
+            # Redirige a index.html si las credenciales son correctas
+            return redirect(url_for('index'))
+        else:
+            # Muestra un mensaje de error si las credenciales no son correctas
+            return 'Credenciales incorrectas'
+
+    return render_template('login.html')
+
+# Ruta para la página principal (index.html)
+@app.route('/index')
+def index():
+    return render_template('index.html')
+
+
+# Ruta para el registro
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form['name']
+        phone = request.form['phone']
+        email = request.form['email']
+        password = request.form['password']
+        
+        try:
+            # Conectar a la base de datos
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # Verificar si el correo ya existe en la base de datos
+            cursor.execute('SELECT * FROM cliente WHERE correo = %s', (email,))
+            existing_user = cursor.fetchone()  # Devuelve None si no encuentra registros
+
+            if existing_user:
+                flash('El correo ya está registrado, por favor ingresa otro.', 'error')
+                cursor.close()
+                conn.close()
+                # Volver a renderizar el formulario de registro con el mensaje de error
+                return render_template('login.html', show_register=True)
+
+            cursor.execute('INSERT INTO cliente (nombre, telefono, correo, contrasena) VALUES (%s, %s, %s, %s)',
+                           (name, phone, email, password))
+            conn.commit()  # Asegúrate de hacer commit
+            cursor.close()
+            conn.close()
+
+            flash('Registro exitoso. Ahora puedes iniciar sesión.', 'success')
+
+            return redirect(url_for('login'))
+
+        except Exception as e:
+            print(f"Error al registrar el cliente: {e}")
+            flash('Hubo un problema al registrar al cliente, por favor intenta de nuevo.', 'error')
+            return render_template('login.html', show_register=True)
+
+    return render_template('login.html', show_register=False)
 
 ## CLIENTES
 # Obtener todos los clientes

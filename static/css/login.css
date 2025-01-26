@@ -4,7 +4,7 @@
 }
 
 body{
-    background-image: url(/static/img/fondo.png);
+    background-image: url("{{ url_for('static', filename='img/fondo.png') }}");
     background-repeat: no-repeat;
     background-size: cover; 
     margin: 0;
@@ -70,7 +70,10 @@ body{
     text-decoration: none;
   }
   
-  .form .login-button {
+  .form .login-button,
+  .form .register-toggle,
+  .form .register-button,
+  .form .login-toggle {
     display: block;
     width: 100%;
     font-weight: bold;
@@ -143,3 +146,31 @@ body{
   .social-account-container .social-accounts .social-button:active {
     transform: scale(0.9);
   }
+
+  /* Estilo para los mensajes de éxito */
+.success {
+  background-color: #86c088;  /* Verde */
+  color: white;
+  padding: 5px;
+  margin: 10px 0;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: Arial, Helvetica, sans-serif;
+
+}
+
+/* Estilo para los mensajes de error */
+.error {
+  background-color: #a85b56;  /* Rojo */
+  color: white;
+  padding: 5px;
+  margin: 10px 0;
+  border-radius: 5px;
+  font-size: 14px;
+  font-family: Arial, Helvetica, sans-serif;}
+
+/* Estilo para los mensajes generales */
+ul {
+  list-style-type: none;
+  padding: 0;
+}
