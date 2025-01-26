@@ -847,39 +847,57 @@ def registrar_metodo_pago():
             restante = Decimal(0)  # Se cubrió todo con la tarjeta
 
         elif metodo_pago == "giftcard":
-            # Validar existencia y saldo de la gift card
-            cursor.execute("SELECT saldo FROM GIFT_CARD WHERE id_gift = %s", (giftcard.get("id_gift"),))
-            giftcard_data = cursor.fetchone()
-            if not giftcard_data:
-                return jsonify({"error": "La gift card no existe"}), 404
-
-            saldo_giftcard = Decimal(giftcard_data[0])
-            if saldo_giftcard < precio_total:
-                return jsonify({"error": "Saldo insuficiente en la gift card"}), 400
-
-            # Actualizar saldo de la gift card
-            nuevo_saldo = saldo_giftcard - precio_total
-            cursor.execute(
-                "UPDATE GIFT_CARD SET saldo = %s WHERE id_gift = %s",
-                (nuevo_saldo, giftcard["id_gift"])
-            )
+            # Validar datos de la gift card
+            if not giftcard.get("id_gift") or not giftcard.get("saldo") or not giftcard.get("fecha_emision") or not giftcard.get("fecha_expedicion"):
+                return jsonify({"error": "Datos incompletos de la gift card"}), 400
 
             # Insertar en METODO_DE_PAGO
             cursor.execute(
                 """
                 INSERT INTO METODO_DE_PAGO (id_compra, tipo_pago)
-                VALUES (%s, %s)
+                VALUES (%s, %s) RETURNING id_metodopago
                 """,
                 (id_compra, "giftcard")
             )
-            restante = Decimal(0)  # Se cubrió todo con la gift card
+            id_metodopago = cursor.fetchone()[0]
+
+            # Validar existencia y saldo de la gift card
+            cursor.execute("SELECT saldo FROM GIFT_CARD WHERE id_gift = %s", (giftcard["id_gift"],))
+            giftcard_data = cursor.fetchone()
+
+            if not giftcard_data:
+                # Si la gift card no existe, insertar una nueva asociada al método de pago
+                cursor.execute(
+                    """
+                    INSERT INTO GIFT_CARD (id_gift, id_metodopago, saldo, fecha_emision, fecha_expedicion)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (giftcard["id_gift"], id_metodopago, giftcard["saldo"], giftcard["fecha_emision"], giftcard["fecha_expedicion"])
+                )
+            else:
+                # Si la gift card existe, validar su saldo y actualizar
+                saldo_giftcard = Decimal(giftcard_data[0])
+                if saldo_giftcard < precio_total:
+                    return jsonify({"error": "Saldo insuficiente en la gift card"}), 400
+
+                nuevo_saldo = saldo_giftcard - precio_total
+                cursor.execute(
+                    "UPDATE GIFT_CARD SET saldo = %s WHERE id_gift = %s",
+                    (nuevo_saldo, giftcard["id_gift"])
+                )
+
+            restante = Decimal(0) # Se cubrió todo con la gift card
 
         elif metodo_pago == "ambos":
             # Validar datos de la tarjeta y gift card
             if not tarjeta.get("num_tarjeta") or not tarjeta.get("fecha_vencimiento") or not tarjeta.get("cvv"):
                 return jsonify({"error": "Datos incompletos de la tarjeta"}), 400
 
-            cursor.execute("SELECT saldo FROM GIFT_CARD WHERE id_gift = %s", (giftcard.get("id_gift"),))
+            if not giftcard.get("id_gift"):
+                return jsonify({"error": "Datos incompletos de la gift card"}), 400
+
+            # Validar existencia y saldo de la gift card
+            cursor.execute("SELECT saldo FROM GIFT_CARD WHERE id_gift = %s", (giftcard["id_gift"],))
             giftcard_data = cursor.fetchone()
             if not giftcard_data:
                 return jsonify({"error": "La gift card no existe"}), 404
@@ -894,7 +912,7 @@ def registrar_metodo_pago():
                 (saldo_giftcard - pago_giftcard, giftcard["id_gift"])
             )
 
-            # Insertar en METODO_DE_PAGO (gift card)
+            # Insertar en METODO_DE_PAGO para la gift card
             cursor.execute(
                 """
                 INSERT INTO METODO_DE_PAGO (id_compra, tipo_pago)
@@ -903,24 +921,31 @@ def registrar_metodo_pago():
                 (id_compra, "giftcard")
             )
 
-            # Insertar en METODO_DE_PAGO (tarjeta)
-            cursor.execute(
-                """
-                INSERT INTO METODO_DE_PAGO (id_compra, tipo_pago)
-                VALUES (%s, %s) RETURNING id_metodopago
-                """,
-                (id_compra, "tarjeta")
-            )
-            id_metodopago = cursor.fetchone()[0]
+            # Si todavía queda un monto restante, se cubre con la tarjeta
+            if restante > 0:
+                # Insertar en METODO_DE_PAGO para la tarjeta
+                cursor.execute(
+                    """
+                    INSERT INTO METODO_DE_PAGO (id_compra, tipo_pago)
+                    VALUES (%s, %s) RETURNING id_metodopago
+                    """,
+                    (id_compra, "tarjeta")
+                )
+                id_metodopago = cursor.fetchone()[0]
 
-            # Insertar en TARJETA
-            cursor.execute(
-                """
-                INSERT INTO TARJETA (num_tarjeta, id_metodopago, nombre, fecha_vencimiento, cvv)
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (tarjeta["num_tarjeta"], id_metodopago, tarjeta.get("nombre"), tarjeta["fecha_vencimiento"], tarjeta["cvv"])
-            )
+                # Insertar en TARJETA
+                cursor.execute(
+                    """
+                    INSERT INTO TARJETA (num_tarjeta, id_metodopago, nombre, fecha_vencimiento, cvv)
+                    VALUES (%s, %s, %s, %s, %s)
+                    """,
+                    (tarjeta["num_tarjeta"], id_metodopago, tarjeta.get("nombre"), tarjeta["fecha_vencimiento"], tarjeta["cvv"])
+                )
+                restante = Decimal(0)  # Todo el saldo restante se cubrió con la tarjeta
+
+            # Si el monto restante es mayor que 0, hay un error en la lógica
+            if restante > 0:
+                return jsonify({"error": "El monto restante no pudo ser cubierto"}), 400
 
         # Confirmar cambios
         conn.commit()
@@ -1003,37 +1028,48 @@ def obtener_gift_cards():
 
 # Endpoint para agregar una nueva gift card
 @app.route('/gift_card', methods=['POST'])
-def agregar_gift_card():
+def registrar_giftcard():
+    data = request.json
+
+    id_gift = data.get("id_gift")
+    id_metodopago = data.get("id_metodopago")
+    saldo = data.get("saldo")
+    fecha_emision = data.get("fecha_emision")
+    fecha_expedicion = data.get("fecha_expedicion")
+
+    # Validar datos obligatorios
+    if not id_gift or not id_metodopago or saldo is None or not fecha_emision or not fecha_expedicion:
+        return jsonify({"error": "Datos incompletos para la gift card"}), 400
+
     try:
-        datos = request.json
-
-        id_metodopago = datos.get('id_metodopago')
-        saldo = datos.get('saldo')
-        fecha_emision = datos.get('fecha_emision')
-        fecha_expedicion = datos.get('fecha_expedicion')
-
-        if not all([id_metodopago, saldo, fecha_emision, fecha_expedicion]):
-            return jsonify({'error': 'Faltan datos requeridos: id_metodopago, saldo, fecha_emision, fecha_expedicion'}), 400
-
+        # Conexión a la base de datos
         conn = get_db_connection()
         cursor = conn.cursor()
 
-        query = """
-        INSERT INTO gift_card (id_metodopago, saldo, fecha_emision, fecha_expedicion)
-        VALUES (%s, %s, %s, %s)
-        RETURNING id_gift
-        """
-        cursor.execute(query, (id_metodopago, saldo, fecha_emision, fecha_expedicion))
-        nuevo_id = cursor.fetchone()[0]
+        # Verificar que el método de pago exista
+        cursor.execute("SELECT id_metodopago FROM METODO_DE_PAGO WHERE id_metodopago = %s", (id_metodopago,))
+        if cursor.fetchone() is None:
+            return jsonify({"error": "El método de pago asociado no existe"}), 404
 
+        # Insertar en la tabla GIFT_CARD
+        cursor.execute(
+            """
+            INSERT INTO GIFT_CARD (id_gift, id_metodopago, saldo, fecha_emision, fecha_expedicion)
+            VALUES (%s, %s, %s, %s, %s)
+            """,
+            (id_gift, id_metodopago, saldo, fecha_emision, fecha_expedicion)
+        )
+
+        # Confirmar cambios
         conn.commit()
+        return jsonify({"message": "Gift card registrada exitosamente"}), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
         cursor.close()
         conn.close()
-
-        return jsonify({'mensaje': 'Gift Card agregada exitosamente', 'id_gift': nuevo_id}), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
 
 
 @app.route('/direcciones', methods=['POST'])
