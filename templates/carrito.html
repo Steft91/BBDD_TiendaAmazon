@@ -9,8 +9,11 @@
     <title>Carrito de Compra</title>
 </head>
 <body>
+    <!-- Modo oscuro -->
     <input type="checkbox" id="modoOscuro" autofill="false">
     <label for="modoOscuro" class="modoOscuroInterruptor">🌙</label>
+
+    <!-- Header con navegación -->
     <header>
         <nav>
             <a href="index.html">
@@ -32,12 +35,17 @@
             </div>
         </nav>
     </header>
+
+    <!-- Contenido principal -->
     <main>
+        <!-- Título -->
         <section class="textoPago">
             <h1>Pago</h1>
         </section>
 
+        <!-- Carrito y métodos de pago -->
         <section class="checkout">
+            <!-- Carrito de compra -->
             <aside class="shoppingCart">
                 <h2>Carrito de compra</h2>
                 <table class="cartTable">
@@ -50,7 +58,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Vacío al cargar, se llena dinámicamente -->
+                        <!-- Vacío al cargar, se llena dinámicamente desde carrito.js -->
                     </tbody>
                 </table>
                 <div class="subtotal">
@@ -63,6 +71,7 @@
                 </div>
             </aside>
 
+            <!-- Métodos de pago -->
             <section class="paymentMethod">
                 <div class="information">
                     <h2>Tu información</h2>
@@ -75,27 +84,32 @@
                     <h3>Métodos de pago</h3>
                     <div class="payment-method">
                         <label>
-                            <input type="radio" name="payment" value="PayPal">
-                            <img src="/static/img/paypal.webp" alt="PayPal" width="50px">
+                            <input type="radio" name="payment" value="Tarjeta de crédito" id="creditCard">
+                            Tarjeta de crédito
                         </label>
                         <label>
-                            <input type="radio" name="payment" value="Visa">
-                            <img src="/static/img/visa.webp" alt="Visa" width="50px">
+                            <input type="radio" name="payment" value="Gift card" id="giftCard">
+                            Gift card
                         </label>
                         <label>
-                            <input type="radio" name="payment" value="MasterCard">
-                            <img src="/static/img/mastercard.jpg" alt="MasterCard" width="50px">
-                        </label>
-                        <label>
-                            <input type="radio" name="payment" value="Amex">
-                            <img src="/static/img/amex.png" alt="American Express" width="50px">
+                            <input type="radio" name="payment" value="Transferencia bancaria" id="bankTransfer">
+                            Transferencia bancaria
                         </label>
                     </div>
-                    <button>Comprar ahora</button>
+                    <!-- Detalles de la gift card -->
+                    <div id="giftCardDetails" style="display: none; margin-top: 20px;">
+                        <h4>Detalles de la Gift Card</h4>
+                        <p><strong>ID Gift Card:</strong> <span id="giftCardId"></span></p>
+                        <p><strong>ID Método de Pago:</strong> <span id="paymentMethodId"></span></p>
+                        <p><strong>Saldo:</strong> $<span id="giftCardBalance"></span></p>
+                        <p><strong>Fecha de Emisión:</strong> <span id="issueDate"></span></p>
+                        <p><strong>Fecha de Vencimiento:</strong> <span id="expiryDate"></span></p>
+                    </div>
                 </div>
             </section>
         </section>
 
+        <!-- Footer -->
         <footer>
             <section class="infoFooter">
                 <section class="logoFooter">
@@ -117,6 +131,8 @@
             </section>
         </footer>
     </main>
+
+    <!-- Script del carrito -->
     <script src="/static/js/carrito.js"></script>
 </body>
 </html>

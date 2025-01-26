@@ -5,6 +5,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnAgregar = document.getElementById('btnAgregar'); // Botón de agregar
     const btnComprar = document.getElementById('btnComprar'); // Botón "Comprar ahora"
 
+    // Elementos para mostrar detalles de la gift card
+    const giftCardRadio = document.getElementById('giftCard');
+    const giftCardDetails = document.getElementById('giftCardDetails');
+    const giftCardId = document.getElementById('giftCardId');
+    const paymentMethodId = document.getElementById('paymentMethodId');
+    const giftCardBalance = document.getElementById('giftCardBalance');
+    const issueDate = document.getElementById('issueDate');
+    const expiryDate = document.getElementById('expiryDate');
+
     // Inicializar la tabla del carrito vacía o con productos desde sessionStorage
     function actualizarCarrito() {
         tbody.innerHTML = ''; // Vaciar la tabla
@@ -42,10 +51,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Eliminar producto del carrito
     tbody.addEventListener('click', (e) => {
         if (e.target.classList.contains('deleteButton')) {
-            const index = e.target.getAttribute('data-index'); // Usar índice único
-            carrito.splice(index, 1); // Eliminar el producto del carrito
-            sessionStorage.setItem('carrito', JSON.stringify(carrito)); // Actualizar sessionStorage
-            actualizarCarrito(); // Actualizar la tabla
+            const id = e.target.getAttribute('data-id');
+            const index = carrito.findIndex((producto) => producto.id === id);
+            if (index !== -1) {
+                carrito.splice(index, 1); // Eliminar el producto del carrito
+                sessionStorage.setItem('carrito', JSON.stringify(carrito)); // Actualizar sessionStorage
+                actualizarCarrito(); // Actualizar la tabla
+            }
         }
     });
 
@@ -63,6 +75,26 @@ document.addEventListener('DOMContentLoaded', () => {
             sessionStorage.removeItem('carrito'); // Vaciar el carrito
             subtotalElement.textContent = `Subtotal: $0.00`; // Restablecer subtotal
             actualizarCarrito(); // Actualizar la tabla
+        }
+    });
+
+    // Mostrar detalles de la gift card
+    giftCardRadio.addEventListener('change', async () => {
+        try {
+            const response = await fetch('/giftcard/1'); // Reemplaza "1" con el ID dinámico si es necesario
+            if (response.ok) {
+                const data = await response.json();
+                giftCardId.textContent = data.id_gift;
+                paymentMethodId.textContent = data.id_metodo_pago;
+                giftCardBalance.textContent = data.saldo.toFixed(2);
+                issueDate.textContent = data.fecha_emision;
+                expiryDate.textContent = data.fecha_vencimiento;
+                giftCardDetails.style.display = 'block';
+            } else {
+                alert('No se encontraron detalles para esta gift card.');
+            }
+        } catch (error) {
+            console.error('Error al cargar los detalles de la gift card:', error);
         }
     });
 
