@@ -1,90 +1,124 @@
-const API_URL = "http://localhost:5000/carrito";
+// Cargar productos en la tabla al cargar la página
+    async function cargarProductos() {
+        try {
+            const response = await fetch('/productos', { method: 'GET' });
+            const productos = await response.json();
+            const tbody = document.querySelector('.cartTable tbody');
+            tbody.innerHTML = '';
 
-// Obtener todos los productos del carrito
-async function obtenerCarrito() {
-    try {
-        const response = await fetch(API_URL);
-        const carrito = await response.json();
-        renderCarrito(carrito);
-    } catch (error) {
-        console.error("Error al obtener el carrito:", error);
+            productos.forEach(producto => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td><img src="${producto.imagen}" alt="${producto.nombre}" class="productImage"> ${producto.nombre}</td>
+                    <td>${producto.precio}</td>
+                    <td>
+                        <input type="number" value="${producto.cantidad}" min="1" class="quantityInput" onchange="editarProducto(${producto.id}, this.value)">
+                    </td>
+                    <td>
+                        <button onclick="eliminarProducto(${producto.id})">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(fila);
+            });
+        } catch (error) {
+            console.error('Error al cargar productos:', error);
+        }
     }
-}
 
-// Renderizar el carrito en la tabla
-function renderCarrito(carrito) {
-    const tbody = document.querySelector(".cartTable tbody");
-    tbody.innerHTML = ""; // Limpiar contenido
-    carrito.forEach(item => {
-        const row = `
-            <tr data-id="${item.id_producto}">
-                <td><img src="${item.imagen}" alt="${item.nombre}" class="productImage"> ${item.nombre}</td>
-                <td>$${item.precio.toFixed(2)}</td>
-                <td>
-                    <input type="number" value="${item.cantidad}" min="1" class="quantityInput" data-id="${item.id_producto}">
-                </td>
-                <td>
-                    <button class="btnEliminar" data-id="${item.id_producto}">Eliminar</button>
-                </td>
-            </tr>
-        `;
-        tbody.innerHTML += row;
+    // Agregar un nuevo producto
+    async function agregarProducto() {
+        const nombre = prompt('Ingrese el nombre del producto:');
+        const precio = parseFloat(prompt('Ingrese el precio del producto:'));
+        const cantidad = parseInt(prompt('Ingrese la cantidad del producto:'));
+
+        if (nombre && !isNaN(precio) && !isNaN(cantidad)) {
+            try {
+                const response = await fetch('/productos', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre, precio, cantidad })
+                });
+                if (response.ok) {
+                    alert('Producto agregado exitosamente');
+                    cargarProductos();
+                } else {
+                    alert('Error al agregar producto');
+                }
+            } catch (error) {
+                console.error('Error al agregar producto:', error);
+            }
+        } else {
+            alert('Datos inválidos');
+        }
+    }
+
+    // Editar un producto existente
+    async function editarProducto(id, nuevaCantidad) {
+        try {
+            const response = await fetch(`/productos/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cantidad: nuevaCantidad })
+            });
+            if (response.ok) {
+                alert('Producto actualizado exitosamente');
+                cargarProductos();
+            } else {
+                alert('Error al actualizar producto');
+            }
+        } catch (error) {
+            console.error('Error al actualizar producto:', error);
+        }
+    }
+
+    // Eliminar un producto
+    async function eliminarProducto(id) {
+        if (confirm('¿Está seguro de que desea eliminar este producto?')) {
+            try {
+                const response = await fetch(`/productos/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    alert('Producto eliminado exitosamente');
+                    cargarProductos();
+                } else {
+                    alert('Error al eliminar producto');
+                }
+            } catch (error) {
+                console.error('Error al eliminar producto:', error);
+            }
+        }
+    }
+
+    // Buscar un producto por nombre
+    async function buscarProducto() {
+        const nombre = prompt('Ingrese el nombre del producto a buscar:');
+        if (nombre) {
+            try {
+                const response = await fetch(`/productos/buscar?nombre=${encodeURIComponent(nombre)}`, { method: 'GET' });
+                const productos = await response.json();
+                if (productos.length > 0) {
+                    const tbody = document.querySelector('.cartTable tbody');
+                    tbody.innerHTML = '';
+                    productos.forEach(producto => {
+                        const fila = document.createElement('tr');
+                        fila.innerHTML = `
+                            <td><img src="${producto.imagen}" alt="${producto.nombre}" class="productImage"> ${producto.nombre}</td>
+                            <td>${producto.precio}</td>
+                            <td>${producto.cantidad}</td>
+                        `;
+                        tbody.appendChild(fila);
+                    });
+                } else {
+                    alert('Producto no encontrado');
+                }
+            } catch (error) {
+                console.error('Error al buscar producto:', error);
+            }
+        }
+    }
+
+    // Asociar botones con las funciones
+    document.addEventListener('DOMContentLoaded', () => {
+        cargarProductos();
+        document.getElementById('btnAgregar').addEventListener('click', agregarProducto);
+        document.getElementById('btnBuscar').addEventListener('click', buscarProducto);
     });
-    agregarListeners();
-}
-
-// Agregar eventos a inputs y botones
-function agregarListeners() {
-    document.querySelectorAll(".quantityInput").forEach(input => {
-        input.addEventListener("change", actualizarCantidad);
-    });
-    document.querySelectorAll(".btnEliminar").forEach(button => {
-        button.addEventListener("click", eliminarProducto);
-    });
-}
-
-// Actualizar la cantidad de un producto
-async function actualizarCantidad(e) {
-    const id = e.target.dataset.id;
-    const cantidad = e.target.value;
-    try {
-        await fetch(`${API_URL}/${id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ cantidad: parseInt(cantidad) })
-        });
-        obtenerCarrito();
-    } catch (error) {
-        console.error("Error al actualizar la cantidad:", error);
-    }
-}
-
-// Eliminar un producto del carrito
-async function eliminarProducto(e) {
-    const id = e.target.dataset.id;
-    try {
-        await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-        obtenerCarrito();
-    } catch (error) {
-        console.error("Error al eliminar el producto:", error);
-    }
-}
-
-// Agregar un nuevo producto al carrito
-async function agregarProducto(producto) {
-    try {
-        await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(producto)
-        });
-        obtenerCarrito();
-    } catch (error) {
-        console.error("Error al agregar el producto:", error);
-    }
-}
-
-// Inicializar
-document.addEventListener("DOMContentLoaded", () => {
-    obtenerCarrito();
-});
