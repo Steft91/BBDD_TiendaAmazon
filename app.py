@@ -44,6 +44,11 @@ def carrito():
 def libreria():
     return render_template('libreria.html')
 
+@app.route('/libros')
+def libros():
+    return render_template('libros.html')
+
+
 # Definición de rutas
 
 ## CLIENTES

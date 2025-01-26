@@ -6,7 +6,97 @@
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/libros.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.1/css/all.min.css" integrity="sha512-5Hs3dF2AEPkpNAR7UiOHba+lRSJNeM2ECkwxUIxC1Q/FLycGTbNapWXB4tP889k5T5Ju8fs4b1P5z/iB4nMfSQ==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+ 
     <title>Libros</title>
+    <style>
+        body {
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+
+        .product-details {
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 30px;
+            background:rgb(180, 188, 231);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .product-details img {
+            max-width: 350px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .product-details h1 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .product-details p {
+            font-size: 1rem;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .product-details .product-price {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+
+        .product-details .product-stock {
+            font-size: 1.2rem;
+            color: #17a2b8;
+            margin-bottom: 10px;
+        }
+
+        .product-details .product-discount {
+            font-size: 1.2rem;
+            color: #dc3545;
+            margin-bottom: 10px;
+        }
+
+        .product-details .star-rating {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        .product-details .star-rating span {
+            color: #6c757d;
+            font-size: 1rem;
+        }
+
+        .provider-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .provider-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+
+        .product-details button {
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+    </style>
 </head>
 <body>
     <input type="checkbox" id="modoOscuro" autofill="false">
@@ -34,269 +124,31 @@
     </header>
     <section class="contenedor"> 
         <main>
-            <section class="container">
-                <section class="libros" style="flex: 7;">
-                    <section class="libro" >
-                        <p class="infoTitulo">Drácula</p>
-                        <span class="descuento">¡-20%!</span>
-                        <img src="/static/img/libroTerror.jpg" alt="terror" class="imgLibros">
-                        <p class="infoPrecio">$19.38</p>
-                        <p class="infoAutor">Bram Stoker</p>
-                        <p class="infoEditorial">AlFaguara</p>
-                        <p class="infoCategoria">
-                            <strong>Categorías:</strong>
-                            <span class="iconoCategoria">🩸</span> Terror, Cuentos Clásicos, Ficción Clásica
-                        </p>
-                        <a class="carrito-link" href="login.html"><i class="fa-solid fa-cart-shopping"></i>Agregar al carrito</a>
+            <div class="product-details">
+                <img id="productImage" src="" alt="Imagen del producto">
+                <h1 id="productName"></h1>
+                <p id="productDescription"></p>
+                <p class="product-price" id="productPrice"></p>
+                <p class="product-stock" id="productStock"></p>
+                <p class="product-discount" id="productDiscount"></p>
+                <div class="star-rating" id="productRating">
+                    <span id="numericRating"></span>
+                </div>
+        
+                <div class="provider-info">
+                    <h3>Información del Proveedor</h3>
+                    <p id="providerName"></p>
+                    <p id="providerContact"></p>
+                    <p id="providerAddress"></p>
+                </div>
+        
+                <button class="btn btn-primary" id="editButton">Editar Producto</button>
+            </div>
+        
     
-                        <h2>Descripción</h2>
-                        <p class="descripcion">
-                            Jonathan Harker, un joven abogado inglés de Londres, tiene que cerrar unos negocios con el misterioso conde Drácula. Viaja hasta el castillo del conde en los Montes Cárpatos de Transilvania, para convertirse en huésped y prisionero de un hombre que no se refleja en los espejos, ni come nunca en su presencia. A partir de aquí, incluso el compromiso amoroso de Harker con la joven Mina Murray se verá afectado. La novela gótica por excelencia, que se mantiene como un referente inalterable desde hace más de cien años. 
-                        </p>
-                    </section>
-    
-                    <section class="libro">
-                        <p class="infoTitulo">Cuentos de Muerte y Demencia</p>
-                        <img src="/static/img/terror2.jpg" alt="Cuentos de Muerte y Demencia" class="imgLibros">
-                        <p class="infoPrecio">$18.50</p>
-                        <p class="infoAutor">Edgar Allan Poe</p>
-                        <p class="infoEditorial">Nórdicalibros</p>
-                        <p class="infoCategoria">
-                            <strong>Categorías:</strong>
-                            <span class="iconoCategoria">👻</span> Terror, Relatos Cortos, Ficción
-                        </p>
-                        <a class="carrito-link" href="login.html"><i class="fa-solid fa-cart-shopping"></i>Agregar al carrito</a>
+            <button class="btn btn-primary" id="editButton">Editar Producto</button>
+        </div>
             
-                        <h2>Descripción</h2>
-                        <p class="descripcion">Un asesino exasperado por el latido del corazón aún palpitante
-                            de su víctima... Una institución mental dirigida por alguien
-                            ajeno al personal... Una caja misteriosa a bordo de un barco
-                            con un terrible secreto... La mirada del hipnotizador que, 
-                            tal vez, podría paralizar a la misma Muerte... Ponte la cámisa
-                                de fuerza y abróchatela bien, porque en estas páginas hay 
-                                historias de amor perdido, caminos errados... y mentes 
-                                extraviadas. Esta entrega de los mejores relatos de Poe 
-                                incluye «El corazón delator», «El sistema del doctor Tarr
-                                y el profesor Fether», «La caja oblonga» y «Los hechos 
-                                del caso del Sr. Valdemar». El terror, lo macabro y el 
-                                horror siguen alcanzando cotas sobrenaturales gracias a 
-                                las escalofriantes ilustraciones de Gris Grimly. Abre 
-                                el libro... si te atreves.</p>
-                    </section>
-    
-                    <section class="libro">
-                        <p class="infoTitulo">El Señor de los Anillos</p>
-                        <img src="/static/img/elsranillos.jpg" alt="El Señor de los Anillos" class="imgLibros">
-                        
-                        <p class="infoPrecio">$15.91</p>
-                        <p class="infoAutor">J. R. R. Tolkien</p>
-                        <p class="infoEditorial">Booknet</p>
-                        <p class="infoCategoria">
-                            <strong>Categorías:</strong>
-                            <span class="iconoCategoria">🐉</span> Fantasía, Épica, Ficción
-                        </p>
-                        <a class="carrito-link" href="login.html"><i class="fa-solid fa-cart-shopping"></i>Agregar al carrito</a>
-            
-                        <h2>Descripción</h2>
-                        <p class="descripcion">La primera entrega de la trilogía de J. R. R. Tolkien El Señor de los Anillos. 
-                            Empieza tu viaje a la Tierra Media. Edición revisada.
-    
-                            Un héroe inesperado. Una misión peligrosa. La mayor aventura que jamás 
-                            te hayan contado.
-                            
-                            
-                            En la adormecida e idílica Comarca, un joven hobbit recibe
-                            un encargo: custodiar el Anillo Único y emprender el 
-                            viaje para su destrucción en la Grieta del Destino. 
-                            Acompañado por magos, hombres, elfos y enanos, atravesará
-                            la Tierra Media y se internará en las sombras de Mordor, 
-                            perseguido siempre por las huestes de Sauron, el Señor 
-                            Oscuro, dispuesto a recuperar su creación para establecer
-                            el dominio definitivo del Mal.</p>
-                    </section>
-    
-                    <section class="libro">
-                        <p class="infoTitulo">Harry Potter y la Piedra Filosofal</p>
-                        <img src="/static/img/harrypotter.jpg" alt="Harry Potter y la Piedra Filosofal" class="imgLibros">
-                        <p class="infoPrecio">$18.50</p>
-                        <p class="infoAutor">J. K. Rowling</p>
-                        <p class="infoEditorial">Salamandra</p>
-                        <p class="infoCategoria">
-                            <strong>Categorías:</strong>
-                            <span class="iconoCategoria">🪄</span> Fantasía, Aventuras, Juvenil
-                        </p>
-                        <a class="carrito-link" href="login.html"><i class="fa-solid fa-cart-shopping"></i>Agregar al carrito</a>
-            
-                        <h2>Descripción</h2>
-                        <p class="descripcion">«Con las manos temblorosas, Harry le dio la vuelta al sobre 
-                            y vio un sello de lacre púrpura con un escudo de armas: 
-                            un león, un águila, un tejón y una serpiente, que rodeaban
-                            una gran letra H.» Harry Potter nunca ha oído hablar de 
-                            Hogwarts hasta que empiezan a caer cartas en el felpudo 
-                            del número 4 de Privet Drive. Llevan la dirección escrita
-                            con tinta verde en un sobre de pergamino amarillento 
-                            con un sello de lacre púrpura, y sus horripilantes tíos
-                            se apresuran a confiscarlas. Más tarde, el día que 
-                            Harry cumple once años, Rubeus Hagrid, un hombre 
-                            gigantesco cuyos ojos brillan como escarabajos negros, 
-                            irrumpe con una noticia extraordinaria: Harry Potter 
-                            es un mago, y le han concedido una plaza en el Colegio 
-                            Hogwarts de Magia y Hechicería. ¡Una aventura increíble 
-                            está a punto de comenzar!</p>
-                    </section>
-    
-                    <section class="libro">
-                        <span class="descuento">¡-20%!</span>
-                        <p class="infoTitulo">Llámame por tu Nombre</p>
-                        <img src="/static/img/cbyn1Drama.webp" alt="Llámame por tu Nombre" class="imgLibros">
-                        <p class="infoPrecio">$12.45</p>
-                        <p class="infoAutor">André Aciman</p>
-                        <p class="infoEditorial">Debolsillo</p>
-                        <p class="infoCategoria">
-                            <strong>Categorías:</strong>
-                            <span class="iconoCategoria">💔</span> Romance, Drama, Contemporáneo
-                        </p>
-                        <a class="carrito-link" href="login.html"><i class="fa-solid fa-cart-shopping"></i>Agregar al carrito</a>
-                        <h2>Descripción</h2>
-                        <p class="descripcion">Durante la década de los ochenta, la familia de Elio recibe 
-                            todos los veranos en su casa de Italia a estudiantes o 
-                            creadores jóvenes que, a cambio de alojamiento, ayudan 
-                            al padre en las investigaciones vinculadas a su cátedra 
-                            universitaria. Esta vez el elegido es Oliver, un escritor 
-                            norteamericano que pronto excita la imaginación de Elio. 
-                            A lo largo de las siguientes semanas, la obsesión y el 
-                            miedo, la fascinación y el deseo intensificarán la pasión 
-                            de ambos.</p>
-                    </section>
-    
-                    <section class="libro">
-                        <p class="infoTitulo">Las Ventajas de ser Invisible</p>
-                        <img src="/static/img/invisibleDrama.jpg" alt="Las Ventajas de ser Invisible" class="imgLibros">
-                        <p class="infoPrecio">$12.75</p>
-                        <p class="infoAutor">Stephen Chbosky</p>
-                        <p class="infoEditorial">Alfaguara</p>
-                        <p class="infoCategoria">
-                            <strong>Categorías:</strong>
-                            <span class="iconoCategoria">🎭</span> Juvenil, Drama, Contemporáneo
-                        </p>
-                        <a class="carrito-link" href="login.html"><i class="fa-solid fa-cart-shopping"></i>Agregar al carrito</a>
-                        <h2>Descripción</h2>
-                        <p class="descripcion">Charlie es un chico realmente especial: lee muchísimo, 
-                            no sale con chicos ni con chicas y reflexiona sobre 
-                            el mundo desde un punto de vista muy particular. Su 
-                            ingenuidad, su incapacidad para relacionarse normalmente 
-                            y su extrema sinceridad le crean más de un problema, 
-                            especialmente ahora que su único amigo ha muerto. 
-                            Conocer a Sam y Patrick, los chicos más populares y 
-                            vitales del colegio, provocara un giro radical en su 
-                            vida que lo sumergirá de pleno en la adolescencia.</p>
-                    </section>
-    
-                    <section class="libro">
-                        <span class="descuento">¡-20%!</span>
-                        <p class="infoTitulo">Romeo y Julieta</p>
-                        <img src="/static/img/romeoClasico.jpg" alt="Romeo y Julieta" class="imgLibros">
-                        <p class="infoPrecio">$7.15</p>
-                        <p class="infoAutor">William Shakespeare</p>
-                        <p class="infoEditorial">SKLA</p>
-                        <p class="infoCategoria">
-                            <strong>Categorías:</strong>
-                            <span class="iconoCategoria">🏛️</span> Clásicos, Tragedia, Romance
-                        </p>
-                        <a class="carrito-link" href="login.html"><i class="fa-solid fa-cart-shopping"></i>Agregar al carrito</a>
-                        <h2>Descripción</h2>
-                        <p class="descripcion">Una de las historias de amor más icónicas de la literatura, 
-                            escrita por el legendario William Shakespeare es una 
-                            tragedia que cuenta la historia de dos jóvenes que, 
-                            a pesar de la oposición de sus familiares, rivales 
-                            entre sí, deciden casarse de forma ilegal y vivir 
-                            juntos; sin embargo, la presión de esa rivalidad y una 
-                            serie de fatalidades conducen a que la pareja elija 
-                            el suicidio antes que vivir separados.</p>
-                    </section>
-    
-                    <section class="libro">
-                        <span class="descuento">¡-20%!</span>
-                        <p class="infoTitulo">Little Women</p>
-                        <img src="/static/img/littlewomenClasico.jpg" alt="littleWomen" class="imgLibros">
-                        <p class="infoPrecio">$12.55</p>
-                        <p class="infoAutor">Louisa May Alcott</p>
-                        <p class="infoEditorial">Puffin Books</p>
-                        <p class="infoCategoria">
-                            <strong>Categorías:</strong>
-                            <span class="iconoCategoria">📜</span> Clásicos, Juvenil, Familiar
-                        </p>
-                        <a class="carrito-link" href="login.html"><i class="fa-solid fa-cart-shopping"></i>Agregar al carrito</a>
-                        <h2>Descripción</h2>
-                        <p class="descripcion">El clásico cuento de Louisa May Alcott sobre cuatro hermanas en una edición de lujo de tapa dura, con hermosas ilustraciones de portada de Anna Bond, la artista detrás de la mundialmente conocida marca de papelería Rifle Paper Co. Meg, la adulta, Jo, la marimacha, Beth, la tímida y Amy, la precoz. Las cuatro hermanas March no podrían ser más diferentes. Pero con su padre en la guerra y su madre trabajando para mantener a la familia, tienen que confiar unas en otras. Ya sea que estén montando una obra de teatro, formando una sociedad secreta o celebrando la Navidad, hay una cosa que no pueden evitar preguntarse: ¿Papá regresará a casa sano y salvo?</p>
-                    </section>
-    
-                    <section class="libro">
-                        <p class="infoTitulo">Este Dolor no es Mío</p>
-                        <img src="/static/img/autoayuda1.jpg" alt="Este Dolor no es Mío" class="imgLibros">
-                        <p class="infoPrecio">$21.99</p>
-                        <p class="infoAutor">Mark Wolyn</p>
-                        <p class="infoEditorial">GAIA</p>  
-                        <p class="infoCategoria">
-                            <strong>Categorías:</strong>
-                            <span class="iconoCategoria">🧠</span> Psicología, Autoayuda
-                        </p>
-                        <a class="carrito-link" href="login.html"><i class="fa-solid fa-cart-shopping"></i>Agregar al carrito</a>
-                        <h2>Descripción</h2>
-                        <p class="descripcion">Existen pruebas fiables de que muchos problemas crónicos 
-                            o de largo plazo pueden no tener su origen en nuestras 
-                            vivencias inmediatas o en desequilibrios químicos de 
-                            nuestro cerebro, sino en las vidas de nuestros padres, 
-                            abuelos o bisabuelos. Mark Wolynn, fundador y director 
-                            del Instituto de Constelaciones Familiares (FCI) y 
-                            pionero en el estudio de los traumas familiares heredados, 
-                            presenta en "Este dolor no es mío" un enfoque 
-                            transformador que permite resolver problemas crónicos 
-                            que no han podido ser aliviados mediante la terapia 
-                            tradicional, los medicamentos u otras medidas.</p>
-                    </section>
-    
-                    <section class="libro">
-                        <span class="descuento">¡-20%!</span>
-                        <p class="infoTitulo">Sin Miedo</p>
-                        <img src="/static/img/autoayuda2.jpg" alt="Sin miedo" class="imgLibros">
-                        <p class="infoPrecio">$14.50</p>
-                        <p class="infoAutor">Rafael Santandreu</p>
-                        <p class="infoEditorial">Grijalbo</p>
-                        <p class="infoCategoria">
-                            <strong>Categorías:</strong>
-                            <span class="iconoCategoria">📚</span> Psicología, Autoayuda
-                        </p>
-                        <a class="carrito-link" href="login.html"><i class="fa-solid fa-cart-shopping"></i>Agregar al carrito</a>
-                        <h2>Descripción</h2>
-                        <p class="descripcion">El método comprobado para superar la ansiedad, las 
-                            obsesiones, la hiponcondría. 
-                            Sin miedo» es el método definitivo. Cualquiera 
-                            puede ponerlo en práctica siguiendo las instrucciones 
-                            y, claro está, sin necesidad de tomar fármacos. 
-                            Prepárate para convertirte en la mejor versión 
-                            de ti mismo: una persona libre, poderosa y feliz.
-                            ¿Es posible vivir sin miedo? Por supuesto.</p>
-                    </section>
-    
-                </section>
-    
-                <aside class="chat" style="flex: 3;">
-                    <div class="ventana">
-                        <div class="headerChat">
-                            <img src="/static/img/chatbot.jpg" alt="chatbot" class="imgChatbot">
-                            <h3>Chatea con Nosotros</h3>
-                            <button class="btnX">X</button>                    
-                        </div>
-                        <div class="contenidoChat">
-                            <h4>Hola! ¿En qué podemos ayudarte?</h4>
-                            <textarea name="mensaje" id="mensaje" placeholder="Escribe tu mensaje..." rows="10"></textarea>
-                            <button class="enviar">Enviar</button>
-                        </div>
-                    </div>
-                </aside>
-    
-            </section>
         </main>
         
 
@@ -322,5 +174,55 @@
         </footer>
         
     </section>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const producto = JSON.parse(sessionStorage.getItem('productoSeleccionado'));
+            const proveedor = JSON.parse(sessionStorage.getItem('proveedorSeleccionado')); // Suponiendo que el proveedor también se almacena
+
+            if (!producto) {
+                alert('No se encontró el producto.');
+                window.location.href = '/'; // Redirigir a la página principal si no hay datos
+                return;
+            }
+
+            // Mostrar información del producto
+            document.getElementById('productImage').src = producto.imagen;
+            document.getElementById('productName').textContent = producto.nombre;
+            document.getElementById('productDescription').textContent = producto.descripcion;
+            document.getElementById('productPrice').textContent = `Precio: $${producto.precio}`;
+            document.getElementById('productStock').textContent = `Stock disponible: ${producto.stock}`;
+            document.getElementById('productDiscount').textContent = `Descuento: ${producto.descuento}%`;
+
+            // Mostrar calificación con estrellas y valor numérico
+            const starRatingElement = document.getElementById('productRating');
+            const numericRatingElement = document.getElementById('numericRating');
+
+            const roundedRating = Math.round(producto.calificacion * 2) / 2; // Redondear a 0.5 más cercano
+            const fullStars = Math.floor(roundedRating); // Estrellas llenas
+            const halfStar = roundedRating % 1 !== 0; // Media estrella
+            const emptyStars = 5 - Math.ceil(roundedRating); // Estrellas vacías
+
+            starRatingElement.innerHTML =
+                '★'.repeat(fullStars) +
+                (halfStar ? '☆' : '') +
+                '☆'.repeat(emptyStars);
+
+            numericRatingElement.textContent = `(${producto.calificacion.toFixed(1)})`;
+
+            // Mostrar información del proveedor (si está disponible)
+            if (proveedor) {
+                document.getElementById('providerName').textContent = `Nombre: ${proveedor.nombre}`;
+                document.getElementById('providerContact').textContent = `Contacto: ${proveedor.contacto}`;
+                document.getElementById('providerAddress').textContent = `Dirección: ${proveedor.direccion}`;
+            } else {
+                document.querySelector('.provider-info').innerHTML = '<p>No se encontró información del proveedor.</p>';
+            }
+
+            // Configurar botón de edición
+            document.getElementById('editButton').addEventListener('click', () => {
+                window.location.href = `/editarProducto.html?id=${producto.id_producto}`;
+            });
+        });
+      </script>
 </body>
 </html>
