@@ -9,9 +9,9 @@ app.secret_key = 'amazon'
 
 # Credenciales de la base de datos PostgreSQL
 DB_HOST = "localhost"
-DB_NAME = "Amazon"
+DB_NAME = ""
 DB_USER = "postgres"
-DB_PASSWORD = "adminS"
+DB_PASSWORD = ""
 
 # Conexión a la base de datos
 def get_db_connection():
@@ -194,8 +194,12 @@ def add_cliente():
             conn.close()
 
 # Actualizar un cliente
-@app.route('/clientes/<int:id_cliente>', methods=['PUT'])
+@app.route('/cliente/<int:id_cliente>', methods=['PUT'])
 def update_cliente(id_cliente):
+    # Verificar si el cliente está autenticado
+    if not session.get('cliente_id') or session['cliente_id'] != id_cliente:
+        return jsonify({"error": "No estás autorizado para actualizar estos datos"}), 403
+
     cliente = request.json
 
     # Validar que el cuerpo de la solicitud no esté vacío
@@ -225,7 +229,7 @@ def update_cliente(id_cliente):
     valores.append(id_cliente)
 
     # Construir la consulta SQL dinámica
-    query = f"UPDATE Cliente SET {', '.join(campos)} WHERE id_cliente = %s"
+    query = f"UPDATE cliente SET {', '.join(campos)} WHERE id_cliente = %s"
 
     # Ejecutar la consulta
     conn = None
