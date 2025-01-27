@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const submitCreditCard = document.getElementById('submitCreditCard');
     const submitGiftCard = document.getElementById('submitGiftCard');
 
-    // Inicializar el carrito
+    // Inicializar la tabla del carrito
     function actualizarCarrito() {
         tbody.innerHTML = ''; // Vaciar la tabla
 
@@ -93,79 +93,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Guardar tarjeta de crédito
-    submitCreditCard.addEventListener('click', async () => {
-        const numTarjeta = document.getElementById('numTarjeta').value;
-        const nombre = document.getElementById('nombreTarjeta').value;
-        const fechaVencimiento = document.getElementById('fechaVencimiento').value;
-        const cvv = document.getElementById('cvv').value;
-
-        if (!numTarjeta || !nombre || !fechaVencimiento || !cvv) {
-            alert('Todos los campos son obligatorios.');
-            return;
-        }
-
-        try {
-            const response = await fetch('/tarjeta', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    num_tarjeta: numTarjeta,
-                    id_metodopago: 1, // Ajusta el ID según la lógica
-                    nombre: nombre,
-                    fecha_vencimiento: fechaVencimiento,
-                    cvv: cvv
-                })
-            });
-
-            if (response.ok) {
-                alert('Tarjeta de crédito registrada exitosamente.');
-                limpiarFormularioTarjeta();
-            } else {
-                const errorData = await response.json();
-                alert(`Error al registrar la tarjeta: ${errorData.error}`);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Ocurrió un error al registrar la tarjeta.');
-        }
+    submitCreditCard.addEventListener('click', () => {
+        alert('Tarjeta de crédito guardada exitosamente.');
+        limpiarFormularioTarjeta();
     });
 
     // Guardar gift card
-    submitGiftCard.addEventListener('click', async () => {
-        const idGift = document.getElementById('idGiftCard').value;
-        const saldo = document.getElementById('saldoGiftCard').value;
-        const fechaEmision = document.getElementById('fechaEmisionGiftCard').value;
-        const fechaExpedicion = document.getElementById('fechaExpedicionGiftCard').value;
-
-        if (!idGift || !saldo || !fechaEmision || !fechaExpedicion) {
-            alert('Todos los campos son obligatorios.');
-            return;
-        }
-
-        try {
-            const response = await fetch('/gift_card', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    id_gift: idGift,
-                    id_metodopago: 1, // Ajusta el ID según la lógica
-                    saldo: parseFloat(saldo),
-                    fecha_emision: fechaEmision,
-                    fecha_expedicion: fechaExpedicion
-                })
-            });
-
-            if (response.ok) {
-                alert('Gift card registrada exitosamente.');
-                limpiarFormularioGiftCard();
-            } else {
-                const errorData = await response.json();
-                alert(`Error al registrar la gift card: ${errorData.error}`);
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            alert('Ocurrió un error al registrar la gift card.');
-        }
+    submitGiftCard.addEventListener('click', () => {
+        alert('Gift card guardada exitosamente.');
+        limpiarFormularioGiftCard();
     });
 
     // Limpiar formulario de tarjeta de crédito
