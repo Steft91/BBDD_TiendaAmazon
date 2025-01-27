@@ -9,9 +9,9 @@ app.secret_key = 'amazon'
 
 # Credenciales de la base de datos PostgreSQL
 DB_HOST = "localhost"
-DB_NAME = "Amazon"
+DB_NAME = "NuevoAmazon"
 DB_USER = "postgres"
-DB_PASSWORD = "delia1975"
+DB_PASSWORD = "150404"
 
 # Conexión a la base de datos
 def get_db_connection():
@@ -489,37 +489,52 @@ def delete_categoria(id_categoria):
 
 ##PRODUCTOS
 def validate_producto_data(producto):
-    """Valida los campos requeridos para un producto."""
-    required_fields = ['nombre', 'descripcion', 'precio', 'stock', 'id_proveedor', 'id_categoria']
+    required_fields = ['nombre', 'descripcion', 'precio', 'stock', 'descuento', 'id_proveedor', 'id_categoria']
     for field in required_fields:
-        if field not in producto or producto[field] is None:
-            raise ValueError(f"El campo '{field}' es obligatorio.")
+        if field not in producto:
+            raise ValueError(f"El campo {field} es obligatorio.")
+        if producto[field] is None or producto[field] == "":
+            raise ValueError(f"El campo {field} no puede estar vacío.")
+    if not isinstance(producto['precio'], (int, float)) or producto['precio'] <= 0:
+        raise ValueError("El precio debe ser un número mayor a 0.")
+    if not isinstance(producto['stock'], int) or producto['stock'] < 0:
+        raise ValueError("El stock debe ser un número entero no negativo.")
+    if not isinstance(producto['descuento'], int) or producto['descuento'] < 0 or producto['descuento'] > 100:
+        raise ValueError("El descuento debe ser un número entero entre 0 y 100.")
+
 
 @app.route('/productos', methods=['POST'])
 def add_producto():
     """Agrega un producto a la base de datos."""
     producto = request.json
     try:
+        print("Datos recibidos:", producto)  # Log de los datos recibidos
         validate_producto_data(producto)  # Validar datos de entrada
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
-            """
-            INSERT INTO producto (nombre, descripcion, precio, stock, id_proveedor, id_categoria)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            """,
-            (producto['nombre'], producto['descripcion'], producto['precio'],
-             producto['stock'], producto['id_proveedor'], producto['id_categoria'])
-        )
+    """
+    INSERT INTO producto (nombre, descripcion, precio, stock, descuento, id_proveedor, id_categoria, calificacion, imagen)
+    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """,
+    (producto['nombre'], producto['descripcion'], producto['precio'],
+     producto['stock'], producto['descuento'], producto['id_proveedor'],
+     producto['id_categoria'], producto['calificacion'], producto['imagen'])
+)
+
+
         conn.commit()
         return jsonify({"message": "Producto agregado exitosamente"}), 201
     except ValueError as ve:
+        print("Error de validación:", ve)  # Log del error de validación
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
+        print("Error interno:", e)  # Log del error interno
         return jsonify({"error": "Error interno del servidor"}), 500
     finally:
         cursor.close()
         conn.close()
+
 
 @app.route('/productos/<int:id_producto>', methods=['PUT'])
 def update_producto(id_producto):

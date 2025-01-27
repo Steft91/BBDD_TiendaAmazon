@@ -138,11 +138,13 @@ document.addEventListener('DOMContentLoaded', async () => {
           id_proveedor: parseInt(document.getElementById('addProvider').value),
           calificacion: 0.0, // Calificación inicial
           id_categoria: 1, // Puedes ajustar este valor según las categorías disponibles
-          imagen: "https://via.placeholder.com/150" // Imagen de ejemplo, puedes reemplazarla por un input en el formulario
+          imagen: document.getElementById('addImage').value // Imagen de ejemplo, puedes reemplazarla por un input en el formulario
       };
 
+      console.log(newProduct);
+
       // Validar los campos
-      if (!newProduct.nombre || !newProduct.descripcion || isNaN(newProduct.precio) || isNaN(newProduct.stock) || isNaN(newProduct.descuento) || isNaN(newProduct.id_proveedor)) {
+      if (!newProduct.nombre || !newProduct.imagen || !newProduct.descripcion || isNaN(newProduct.precio) || isNaN(newProduct.stock) || isNaN(newProduct.descuento) || isNaN(newProduct.id_proveedor)) {
           alert('Por favor, completa todos los campos correctamente.');
           return;
       }
