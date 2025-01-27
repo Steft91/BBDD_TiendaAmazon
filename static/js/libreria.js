@@ -1,7 +1,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const categoriasEndpoint = '/categorias'; // Endpoint para obtener las categorías
     const productosEndpoint = '/productos'; // Endpoint para obtener los productos
-  
+    const addModal = document.getElementById('addModal');
+    const addButton = document.getElementById('addButton');
+    const closeModalAdd = document.getElementById('closeModalAdd');
+    const cancelAdd = document.getElementById('cancelAdd');
+    const saveAdd = document.getElementById('saveAdd');
+    const addForm = document.getElementById('addForm');
     try {
       const [categoriasResponse, productosResponse] = await Promise.all([
         fetch(categoriasEndpoint),
@@ -107,5 +112,61 @@ document.addEventListener('DOMContentLoaded', async () => {
       sessionStorage.setItem('productoSeleccionado', JSON.stringify(producto)); // Guardar el producto en sessionStorage
       window.location.href = '/libros'; // Redirigir al endpoint correspondiente en Flask
     }
+
+      // Abrir modal para añadir producto
+    addButton.addEventListener('click', () => {
+      addModal.classList.add('show');
   });
+
+  // Cerrar modal al presionar cancelar o cerrar
+  closeModalAdd.addEventListener('click', () => {
+      addModal.classList.remove('show');
+  });
+
+  cancelAdd.addEventListener('click', () => {
+      addModal.classList.remove('show');
+  });
+
+  // Guardar nuevo producto
+  saveAdd.addEventListener('click', async () => {
+      const newProduct = {
+          nombre: document.getElementById('addName').value,
+          descripcion: document.getElementById('addDescription').value,
+          precio: parseFloat(document.getElementById('addPrice').value),
+          stock: parseInt(document.getElementById('addStock').value),
+          descuento: parseInt(document.getElementById('addDiscount').value),
+          id_proveedor: parseInt(document.getElementById('addProvider').value),
+          calificacion: 0.0, // Calificación inicial
+          id_categoria: 1, // Puedes ajustar este valor según las categorías disponibles
+          imagen: "https://via.placeholder.com/150" // Imagen de ejemplo, puedes reemplazarla por un input en el formulario
+      };
+
+      // Validar los campos
+      if (!newProduct.nombre || !newProduct.descripcion || isNaN(newProduct.precio) || isNaN(newProduct.stock) || isNaN(newProduct.descuento) || isNaN(newProduct.id_proveedor)) {
+          alert('Por favor, completa todos los campos correctamente.');
+          return;
+      }
+
+      try {
+          const response = await fetch('/productos', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(newProduct)
+          });
+
+          if (response.ok) {
+              alert('Producto añadido exitosamente');
+              addModal.classList.remove('show');
+              addForm.reset(); // Limpiar el formulario
+          } else {
+              const error = await response.json();
+              console.error('Error del servidor:', error);
+              alert('Error al añadir el producto: ' + error.message || 'Error desconocido');
+          }
+      } catch (error) {
+          console.error('Error al guardar el producto:', error);
+          alert('Error al guardar el producto');
+      }
+  });
+});
   

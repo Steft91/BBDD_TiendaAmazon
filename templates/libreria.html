@@ -42,13 +42,53 @@
                     <li><a href="#Muebles">Muebles</a></li>
                     <li><a href="#Ropa">Ropa</a></li>
                   </ul>
+                  <button class="btn btn-success" id="addButton">Añadir Producto</button>
                 </aside>
                 <div id="productosContainer" class="content" style="flex: 6;">
                   <!-- Las cartas de los productos se generarán aquí dinámicamente -->
                 </div>
               </section>
         </main>
-            
+        <div class="modal" id="addModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Añadir Producto</h5>
+                    <button class="btn-close" id="closeModalAdd">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="addForm">
+                        <div class="mb-3">
+                            <label for="addName" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="addName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addDescription" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="addDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addPrice" class="form-label">Precio</label>
+                            <input type="number" class="form-control" id="addPrice" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addStock" class="form-label">Stock</label>
+                            <input type="number" class="form-control" id="addStock" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addDiscount" class="form-label">Descuento (%)</label>
+                            <input type="number" class="form-control" id="addDiscount" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="addProvider" class="form-label">Proveedor (ID)</label>
+                            <input type="number" class="form-control" id="addProvider" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelAdd">Cancelar</button>
+                    <button class="btn btn-success" id="saveAdd">Añadir</button>
+                </div>
+            </div>
+        </div>
         <footer>
             <section class="infoFooter">
                 <section class="logoFooter">

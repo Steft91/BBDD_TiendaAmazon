@@ -9,9 +9,9 @@ app.secret_key = 'amazon'
 
 # Credenciales de la base de datos PostgreSQL
 DB_HOST = "localhost"
-DB_NAME = ""
+DB_NAME = "Amazon"
 DB_USER = "postgres"
-DB_PASSWORD = ""
+DB_PASSWORD = "delia1975"
 
 # Conexión a la base de datos
 def get_db_connection():

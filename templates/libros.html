@@ -19,7 +19,7 @@
             max-width: 900px;
             margin: 50px auto;
             padding: 30px;
-            background:rgb(180, 188, 231);
+            background:rgb(167, 188, 255);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
             border-radius: 12px;
             display: flex;
@@ -79,7 +79,7 @@
         }
 
         .provider-info {
-            background-color: #f8f9fa;
+            background-color:rgb(189, 222, 255);
             padding: 15px;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -95,6 +95,50 @@
         .product-details button {
             margin-top: 20px;
             font-size: 1.1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background:rgb(167, 188, 255);
+            color: black;
+            padding: 20px;
+            border-radius: 10px;
+            width: 500px;
+            max-width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-header h5 {
+            margin: 0;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .modal.show {
+            display: flex;
         }
     </style>
 </head>
@@ -144,11 +188,45 @@
         
                 <button class="btn btn-primary" id="editButton">Editar Producto</button>
             </div>
-        
-    
-            <button class="btn btn-primary" id="editButton">Editar Producto</button>
         </div>
             
+        <div class="modal" id="editModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5>Editar Producto</h5>
+                    <button class="btn-close" id="closeModal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm">
+                        <div class="mb-3">
+                            <label for="editName" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="editName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDescription" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="editDescription" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editPrice" class="form-label">Precio</label>
+                            <input type="number" class="form-control" id="editPrice" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editStock" class="form-label">Stock</label>
+                            <input type="number" class="form-control" id="editStock" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDiscount" class="form-label">Descuento (%)</label>
+                            <input type="number" class="form-control" id="editDiscount" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="cancelEdit">Cancelar</button>
+                    <button class="btn btn-success" id="saveEdit">Guardar</button>
+                </div>
+            </div>
+        </div>
+    
         </main>
         
 
@@ -175,9 +253,31 @@
         
     </section>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const producto = JSON.parse(sessionStorage.getItem('productoSeleccionado'));
-            const proveedor = JSON.parse(sessionStorage.getItem('proveedorSeleccionado')); // Suponiendo que el proveedor también se almacena
+            const proveedores = [
+                {
+                    "correo_proveedor": "proveedorA@ejemplo.com",
+                    "descripcion_proveedor": "Proveedor de materiales electrónicos",
+                    "id_proveedor": 1,
+                    "nombre": "Proveedor A",
+                    "telefono_proveedor": "0987654321"
+                },
+                {
+                    "correo_proveedor": "proveedorB@ejemplo.com",
+                    "descripcion_proveedor": "Proveedor de equipos de oficina",
+                    "id_proveedor": 2,
+                    "nombre": "Proveedor B",
+                    "telefono_proveedor": "0981122334"
+                },
+                {
+                    "correo_proveedor": "proveedorC@ejemplo.com",
+                    "descripcion_proveedor": "Proveedor de servicios de limpieza",
+                    "id_proveedor": 3,
+                    "nombre": "Proveedor C",
+                    "telefono_proveedor": "0985566778"
+                }
+            ];
 
             if (!producto) {
                 alert('No se encontró el producto.');
@@ -193,34 +293,66 @@
             document.getElementById('productStock').textContent = `Stock disponible: ${producto.stock}`;
             document.getElementById('productDiscount').textContent = `Descuento: ${producto.descuento}%`;
 
-            // Mostrar calificación con estrellas y valor numérico
-            const starRatingElement = document.getElementById('productRating');
-            const numericRatingElement = document.getElementById('numericRating');
+            // Mostrar información del proveedor asociado
+            const proveedor = proveedores.find(p => p.id_proveedor === producto.id_proveedor);
 
-            const roundedRating = Math.round(producto.calificacion * 2) / 2; // Redondear a 0.5 más cercano
-            const fullStars = Math.floor(roundedRating); // Estrellas llenas
-            const halfStar = roundedRating % 1 !== 0; // Media estrella
-            const emptyStars = 5 - Math.ceil(roundedRating); // Estrellas vacías
-
-            starRatingElement.innerHTML =
-                '★'.repeat(fullStars) +
-                (halfStar ? '☆' : '') +
-                '☆'.repeat(emptyStars);
-
-            numericRatingElement.textContent = `(${producto.calificacion.toFixed(1)})`;
-
-            // Mostrar información del proveedor (si está disponible)
             if (proveedor) {
                 document.getElementById('providerName').textContent = `Nombre: ${proveedor.nombre}`;
-                document.getElementById('providerContact').textContent = `Contacto: ${proveedor.contacto}`;
-                document.getElementById('providerAddress').textContent = `Dirección: ${proveedor.direccion}`;
+                document.getElementById('providerContact').textContent = `Contacto: ${proveedor.telefono_proveedor}, ${proveedor.correo_proveedor}`;
+                document.getElementById('providerAddress').textContent = `Descripción: ${proveedor.descripcion_proveedor}`;
             } else {
                 document.querySelector('.provider-info').innerHTML = '<p>No se encontró información del proveedor.</p>';
             }
 
             // Configurar botón de edición
+            const editModal = document.getElementById('editModal');
+            const editForm = document.getElementById('editForm');
+
             document.getElementById('editButton').addEventListener('click', () => {
-                window.location.href = `/editarProducto.html?id=${producto.id_producto}`;
+                editModal.classList.add('show');
+                document.getElementById('editName').value = producto.nombre;
+                document.getElementById('editDescription').value = producto.descripcion;
+                document.getElementById('editPrice').value = producto.precio;
+                document.getElementById('editStock').value = producto.stock;
+                document.getElementById('editDiscount').value = producto.descuento;
+            });
+
+            document.getElementById('closeModal').addEventListener('click', () => {
+                editModal.classList.remove('show');
+            });
+
+            document.getElementById('cancelEdit').addEventListener('click', () => {
+                editModal.classList.remove('show');
+            });
+
+            document.getElementById('saveEdit').addEventListener('click', async () => {
+                const updatedProduct = {
+                    nombre: document.getElementById('editName').value,
+                    descripcion: document.getElementById('editDescription').value,
+                    precio: parseFloat(document.getElementById('editPrice').value),
+                    stock: parseInt(document.getElementById('editStock').value),
+                    descuento: parseInt(document.getElementById('editDiscount').value)
+                };
+
+                try {
+                    const response = await fetch(`/productos/${producto.id_producto}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedProduct)
+                    });
+
+                    if (response.ok) {
+                        alert('Producto actualizado exitosamente');
+                        Object.assign(producto, updatedProduct); // Actualizar datos en la página
+                        sessionStorage.setItem('productoSeleccionado', JSON.stringify(producto));
+                        location.reload();
+                    } else {
+                        alert('Error al actualizar el producto');
+                    }
+                } catch (error) {
+                    console.error('Error al guardar los cambios:', error);
+                    alert('Error al guardar los cambios');
+                }
             });
         });
       </script>
